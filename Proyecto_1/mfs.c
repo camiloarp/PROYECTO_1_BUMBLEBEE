@@ -12,40 +12,6 @@ typedef struct
 
 }header;
 
-void marcarbit(int cual,int valor_bit,unsigned char *m){
-
-
-      
- 
-     if (valor_bit==1)
-       m[cual] = m[cual] | (1 << (7-cual%8));
-     else
-       m[cual] = m[cual] & ~(1 << (7-cual%8));
-         
-    
-}
-
-
-void mostrarbits(unsigned char byte)
-{
-   unsigned char MASK = 1 << 7; 
-
-
-       printf("%c", byte & MASK ? '1' : '0' );
-       byte <<= 1; 
-      
-   
-}
-
-void mostrarmapa(unsigned char *m, int cuantos)
-{
-   int i;
-   for (i=0; i< cuantos; i++)
-   {
-     mostrarbits(m[i]);      
-   }
-   printf("\n ------- fin del mapa --------\n");
-}
 
 void main(int argc, char*argv[]){
 FILE *disco;
