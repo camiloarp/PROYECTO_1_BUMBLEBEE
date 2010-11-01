@@ -1,3 +1,9 @@
+//Camilo Rivera
+//Jaime Escoto
+//leonel Sanchez
+//BUMBLEBEE
+
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
