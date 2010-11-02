@@ -42,6 +42,33 @@ char tag_cancion[128];
 int num_bloques;
 }inodo;
 
+typedef struct
+{
+int apuntadores[256];
+}apunt;
+
+void cambiar(FILE *disco,int cual,char por){
+	char *block;
+	block = (char *)malloc(sizeof(char)*1024);
+	header tempH;
+	fseek(disco,0,0);
+	fread(&tempH,20,1,disco);
+	fseek(disco,0,0);
+	int tamfor = tempH.tam_mapabits;
+	int blocknum= cual/1024;
+	printf("blocknum: %d \n",blocknum);
+	int posinblock = cual-(blocknum*1024);
+	printf("posinblock: %d \n",posinblock);
+	fseek(disco,1024+(blocknum)*1024,0);
+	fread(block,1024,1,disco);
+	block[posinblock]=por;
+	fseek(disco,0,0),
+	fseek(disco,1024+blocknum*1024,0);
+	fwrite(block,1024,1,disco);
+
+}
+
+
 int libre(FILE *disco){
 
 
@@ -86,7 +113,7 @@ header tempH;
 			exit(1);
 			}
 
-		if((disco = fopen(argv[5],"wb"))==NULL)
+		if((disco = fopen(argv[5],"rb+"))==NULL)
 		{
 		printf("No se pudo abrir el archivo origen.\n");
 		exit(2);
@@ -117,7 +144,8 @@ header tempH;
 		}
 		fseek(disco,1024,SEEK_SET);
 		fwrite(block,1024,1,disco);
-		
+		cambiar(disco,65,'1');
+		printf("libre: %d \n",libre(disco));
 
 		
 		fclose(disco);
