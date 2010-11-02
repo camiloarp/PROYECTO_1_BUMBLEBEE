@@ -42,14 +42,8 @@ char tag_cancion[128];
 int num_bloques;
 }inodo;
 
-int libre(char* file){
+int libre(FILE *disco){
 
-FILE *disco;
-if((disco = fopen(file,"rb"))==NULL)
-		{
-		printf("No se pudo abrir el archivo origen.\n");
-		exit(2);
-		}
 
 	header tempH;
 	fseek(disco,0,0);
@@ -73,7 +67,7 @@ if((disco = fopen(file,"rb"))==NULL)
 
 	}
 	
-fclose(disco);
+
 return -1;
 
 }
@@ -123,10 +117,11 @@ header tempH;
 		}
 		fseek(disco,1024,SEEK_SET);
 		fwrite(block,1024,1,disco);
-				
+		
+
+		
 		fclose(disco);
-		int libree = libre(argv[5]);
-		printf("return %d \n",libree);
+
 
 	}
 
