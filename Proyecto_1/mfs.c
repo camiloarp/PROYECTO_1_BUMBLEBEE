@@ -13,6 +13,8 @@ typedef struct
 	int cant_block ;
 	int cant_FS;
 	int cant_TS;
+	int FSuse;
+	int TSuse;
 	int tam_mapabits;
 	int inicio_data;
 
@@ -52,7 +54,7 @@ void cambiar(FILE *disco,int cual,char por){
 	block = (char *)malloc(sizeof(char)*1024);
 	header tempH;
 	fseek(disco,0,0);
-	fread(&tempH,20,1,disco);
+	fread(&tempH,sizeof(tempH),1,disco);
 	fseek(disco,0,0);
 	int tamfor = tempH.tam_mapabits;
 	int blocknum= cual/1024;
@@ -67,14 +69,26 @@ void cambiar(FILE *disco,int cual,char por){
 	fwrite(block,1024,1,disco);
 
 }
+header getheader(FILE *disco){
+header tempH;
+fseek(disco,0,0);
+fread(&tempH,sizeof(tempH),1,disco);
+fseek(disco,0,0);
+return tempH;
+}
 
+void movetoblock(int cual,FILE *disco){
+fseek(disco,0,0);
+fseek(disco,(cual*1024),0);
+
+}
 
 int libre(FILE *disco){
 
 
 	header tempH;
 	fseek(disco,0,0);
-	fread(&tempH,20,1,disco);
+	fread(&tempH,sizeof(tempH),1,disco);
 	fseek(disco,0,0);
 	char *block;
 	block = (char *)malloc(sizeof(char)*1024);
@@ -99,12 +113,14 @@ return -1;
 
 }
 
+
+
 void main(int argc, char*argv[]){
 FILE *disco;
 FILE *mp3;
 header tempH;
-
-
+FE tempF;
+TE tempT;
 	if(strcmp(argv[1],"-c")==0)
 	{
 		
@@ -113,7 +129,7 @@ header tempH;
 			exit(1);
 			}
 
-		if((disco = fopen(argv[5],"rb+"))==NULL)
+		if((disco = fopen(argv[5],"wb"))==NULL)
 		{
 		printf("No se pudo abrir el archivo origen.\n");
 		exit(2);
@@ -134,19 +150,32 @@ header tempH;
 		tempH.cant_FS= atoi(argv[3]);
 		tempH.cant_TS= atoi(argv[4]);
 		tempH.tam_mapabits = (cant_block/8)/1024;
-
+		tempH.FSuse=0;
+	        tempH.TSuse=0;		
+		
 		tempH.inicio_data=tempH.tam_mapabits+tempH.cant_FS+tempH.cant_TS+1;
+
 		fseek(disco,0,SEEK_SET);
-		fwrite(&tempH,1024,1,disco);		
+		fwrite(&tempH,1024,1,disco);
+		
 		int d;
 		for(d=0;d<tempH.inicio_data;d++){		
 		block[d]='1';
 		}
+
 		fseek(disco,1024,SEEK_SET);
 		fwrite(block,1024,1,disco);
-		cambiar(disco,65,'1');
-		printf("libre: %d \n",libre(disco));
-
+		int tamfor = tempH.tam_mapabits;		
+		movetoblock(tamfor+1,disco);
+		memset(tempF.filename,'z',60);
+		int g;
+		for(g=0;g<tempH.cant_FS*(1024/sizeof(tempF));g++){
+		fwrite(&tempF,sizeof(tempF),1,disco);
+		}
+		int h;
+		for(h=0;h<tempH.cant_TS*(1024/sizeof(tempT));h++){
+		fwrite(&tempT,sizeof(tempT),1,disco);
+		}
 		
 		fclose(disco);
 
@@ -154,4 +183,78 @@ header tempH;
 	}
 
 
+if(strcmp(argv[1],"-a")==0)
+	{
+		
+			if(argc!=5){
+			printf("FALTAS DE ARGUMENTOS");
+			exit(1);
+			}
+
+		if((mp3 = fopen(argv[2],"rb+"))==NULL)
+		{
+		printf("No se pudo abrir el archivo origen.\n");
+		exit(2);
+		}
+		if((disco = fopen(argv[4],"rb+"))==NULL)
+		{
+		printf("No se pudo abrir el archivo origen.\n");
+		exit(2);
+		}
+		fseek (mp3, 0, SEEK_END);
+    		long size=ftell (mp3);
+
+		int cantblock=size/1024;
+	
+		unsigned char *block;
+		block = (unsigned char  *)malloc(sizeof(unsigned char )*1024);
+
+		strcpy(tempF.filename,argv[2]);
+		tempF.pointer_inodo=libre(disco);
+		cambiar(disco,tempF.pointer_inodo,'1');
+		
+
+		tempH=getheader(disco);
+		int tamfor = tempH.tam_mapabits;
+		
+		
+
+		
+		
+		if(tempH.FSuse==0){
+		movetoblock(tamfor+1,disco);
+		fwrite(&tempF,sizeof(tempF),1,disco);
+		}else{
+		int n;
+		for(n=0;n<tempH.FSuse+1;n++){
+		fseek(disco,0,0);
+		fseek(disco,(1024*(tamfor+1))+(sizeof(tempF)*n),0);
+	
+		FE temp1;
+		fread(&temp1,sizeof(tempF),1,disco);
+		if(strcmp(tempF.filename,temp1.filename)<=0){
+		fseek(disco,0,0);
+		fseek(disco,(1024*(tamfor+1))+(sizeof(tempF)*n),0);
+		fwrite(&tempF,sizeof(tempF),1,disco);
+		tempF=temp1;
+		
+		}
+		}
+	}
+		
+		fseek(disco,0,0);
+		tempH.FSuse=tempH.FSuse+1;
+		fwrite(&tempH,sizeof(tempH),1,disco);
+
+	
+		fclose(mp3);
+		fclose(disco);
+
+
+	}
+
+
+
 }
+
+
