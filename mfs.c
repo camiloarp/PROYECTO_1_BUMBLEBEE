@@ -37,7 +37,7 @@ typedef struct
 int size_byte;
 int pointer_directo[12];
 int pointer_indirecto;
-int pointer_inderectodoble[4];
+int pointer_inderectodoble;
 int pointer_FE;
 char tags[250];
 char tag_cancion[128];
@@ -83,6 +83,90 @@ fseek(disco,(cual*1024),0);
 
 }
 
+void placeinodo(int FE,long size,int donde,FILE* disco,FILE* mp3,char* tag){
+inodo ind;
+fseek(mp3,0,0);
+unsigned char *block;
+block = (unsigned char  *)malloc(sizeof(unsigned char )*1024);
+ind.size_byte=size;
+int sizedec=size;
+ind.pointer_FE=FE;
+strcpy (ind.tags,tag);
+char tag_cancion[128];///////////falta!!!!!!!!
+int i;
+	for(i=0;i<12;i++){
+		if(sizedec>0){
+		ind.pointer_directo[i]=libre(disco);
+		cambiar(disco,ind.pointer_directo[i],'1');
+		fread(block,1024,1,mp3);
+		movetoblock(ind.pointer_directo[i],disco);
+		fwrite(block,1024,1,disco);
+		sizedec=sizedec-1024;
+		ind.num_bloques++;
+		}
+
+	}
+	apunt apu;
+	if(sizedec>0){
+	ind.pointer_indirecto=libre(disco);
+	cambiar(disco,ind.pointer_indirecto,'1');
+	int o;
+		for(o=0;o<256;o++){
+			if(sizedec>0){
+			int lib = libre(disco);
+			cambiar(disco,lib,'1');
+			apu.apuntadores[o]=lib;
+			movetoblock(lib,disco);
+			fread(block,1024,1,mp3);
+			fwrite(block,1024,1,disco);
+			sizedec=sizedec-1024;
+			ind.num_bloques++;
+			}
+		}
+	movetoblock(ind.pointer_indirecto,disco);
+	fwrite(&apu,1024,1,disco);
+
+	}
+
+	apunt apu1;
+	if(sizedec>0){
+	ind.pointer_inderectodoble=libre(disco);
+	cambiar(disco,ind.pointer_inderectodoble,'1');
+	int a;
+		for(a=0;a<256;a++){
+			if(sizedec>0){
+			int lib = libre(disco);
+			cambiar(disco,lib,'1');
+			apu1.apuntadores[a]=lib;
+			int c;
+			apunt apu2;
+				for(c=0;c<256;c++){
+					if(sizedec>0){
+					int lib1=libre(disco);
+					apu2.apuntadores[c]=lib1;
+					cambiar(disco,lib1,'1');
+					movetoblock(lib1,disco);
+					fread(block,1024,1,mp3);
+					fwrite(block,1024,1,disco);
+					sizedec=sizedec-1024;
+					ind.num_bloques++;
+					}
+				}
+			movetoblock(lib,disco);
+			fwrite(&apu2,1024,1,disco);
+			
+			}
+		}
+	movetoblock(ind.pointer_inderectodoble,disco);
+	fwrite(&apu1,1024,1,disco);
+
+	}
+movetoblock(donde,disco);
+fwrite(&ind,1024,1,disco);
+
+
+}
+
 int libre(FILE *disco){
 
 
@@ -114,26 +198,9 @@ return -1;
 }
 
 void addFE(FE tempF,header tempH,int tamfor,FILE* disco){
-	if(tempH.FSuse==0){
-		movetoblock(tamfor+1,disco);
+
+		movetoblock(tamfor+1+tempH.FSuse,disco);
 		fwrite(&tempF,sizeof(tempF),1,disco);
-		}else{
-		int n;
-		for(n=0;n<tempH.FSuse+1;n++){
-		fseek(disco,0,0);
-		fseek(disco,(1024*(tamfor+1))+(sizeof(tempF)*n),0);
-	
-		FE temp1;
-		fread(&temp1,sizeof(tempF),1,disco);
-		if(strcmp(tempF.filename,temp1.filename)<=0){
-		fseek(disco,0,0);
-		fseek(disco,(1024*(tamfor+1))+(sizeof(tempF)*n),0);
-		fwrite(&tempF,sizeof(tempF),1,disco);
-		tempF=temp1;
-		
-		}
-		}
-	}
 }
 
 void addTE(TE tempT,header tempH,int tamfor,FILE* disco){
@@ -161,14 +228,11 @@ void addTE(TE tempT,header tempH,int tamfor,FILE* disco){
 
 int istag(int cuantos,int donde,TE tempT,FILE* disco){
 	movetoblock(donde,disco);
-	printf("cauntos TE: %d \n",cuantos);
+	
 	int i;
 	for(i=0;i<cuantos;i++){
 	TE tagtemp;
-	
-	printf("tempT %s \n",tempT.tag);
 	fread(&tagtemp,sizeof(tagtemp),1,disco);
-	printf("tagtemp %s \n",tagtemp.tag);
 	if(strcmp(tempT.tag,tagtemp.tag)==0){
 	return i;
 	}
@@ -194,6 +258,7 @@ FILE *mp3;
 header tempH;
 FE tempF;
 TE tempT;
+inodo ind;
 apunt apuntadores;
 	if(strcmp(argv[1],"-c")==0)
 	{
@@ -278,30 +343,22 @@ if(strcmp(argv[1],"-a")==0)
 		}
 		fseek (mp3, 0, SEEK_END);
     		long size=ftell (mp3);
-
-		int cantblock=size/1024;
-	
-		unsigned char *block;
-		block = (unsigned char  *)malloc(sizeof(unsigned char )*1024);
-
+		
 		strcpy(tempF.filename,argv[2]);
 		
 		tempF.pointer_inodo=libre(disco);
 		cambiar(disco,tempF.pointer_inodo,'1');
-
-		tempH=getheader(disco);
+		strcpy(tempT.tag,argv[3]);
 		int tamfor = tempH.tam_mapabits;
 		int tamforT=tamfor+tempH.cant_FS;
-				strcpy(tempT.tag,argv[3]);
-				tempT.pointer=libre(disco);
+		placeinodo(tamfor+tempH.FSuse+1,size,tempF.pointer_inodo,disco,mp3,tempT.tag);
+		tempH=getheader(disco);
+		tempT.pointer=libre(disco);
 		int istagg=istag(tempH.TSuse,tamforT+1,tempT,disco);
-		printf("istagg: %d \n",istagg);
 			if(istagg==-1){
-				printf("libre: %d \n",tempT.pointer);
 				cambiar(disco,tempT.pointer,'1');
 				addTE(tempT,tempH,tamforT,disco);
 				movetoblock(tempT.pointer,disco);
-				printf("ftell: %ld \n",ftell(disco));
 				memset(apuntadores.apuntadores,-1,256);
 				apuntadores.apuntadores[0]=tempF.pointer_inodo;
 				fwrite(&apuntadores,1024,1,disco);
