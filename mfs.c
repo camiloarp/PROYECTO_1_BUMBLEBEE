@@ -87,12 +87,13 @@ void placeinodo(int FE,long size,int donde,FILE* disco,FILE* mp3,char* tag){
 inodo ind;
 fseek(mp3,0,0);
 unsigned char *block;
+unsigned char *tagg;
+tag = (unsigned char  *)malloc(sizeof(unsigned char )*124);
 block = (unsigned char  *)malloc(sizeof(unsigned char )*1024);
 ind.size_byte=size;
 int sizedec=size;
 ind.pointer_FE=FE;
 strcpy (ind.tags,tag);
-char tag_cancion[128];///////////falta!!!!!!!!
 int i;
 	for(i=0;i<12;i++){
 		if(sizedec>0){
@@ -161,7 +162,13 @@ int i;
 	fwrite(&apu1,1024,1,disco);
 
 	}
+fseek(mp3,0,0);
+fseek(mp3,size-125,0);
+fread(tagg,125,1,mp3);
+strcpy(ind.tag_cancion,tagg);
+
 movetoblock(donde,disco);
+printf("ftell: %ld \n",ftell(disco));
 fwrite(&ind,1024,1,disco);
 
 
