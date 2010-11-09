@@ -91,6 +91,7 @@ unsigned char *tagg;
 tag = (unsigned char  *)malloc(sizeof(unsigned char )*124);
 block = (unsigned char  *)malloc(sizeof(unsigned char )*1024);
 ind.size_byte=size;
+printf("size en ind = %d \n",ind.size_byte);
 int sizedec=size;
 ind.pointer_FE=FE;
 strcpy (ind.tags,tag);
@@ -204,8 +205,8 @@ return -1;
 
 }
 
-void addFE(FE tempF,header tempH,int tamfor,FILE* disco){
-
+void addFE(FE tempF,header tempH,FILE* disco){
+		int tamfor = tempH.tam_mapabits;
 		movetoblock(tamfor+1+tempH.FSuse,disco);
 		fwrite(&tempF,sizeof(tempF),1,disco);
 }
@@ -228,7 +229,7 @@ void addTE(TE tempT,header tempH,int tamfor,FILE* disco){
 		fwrite(&tempT,sizeof(tempT),1,disco);
 		tempT=temp1;
 		
-		}
+			}
 		}
 	}
 }
@@ -257,6 +258,24 @@ for(i=0;i<256;i++){
 }
 return -1;
 
+}
+
+FE buscar(char* filename,FILE* disco){
+header tempH;
+tempH = getheader(disco);
+movetoblock(tempH.tam_mapabits+1,disco);
+int i;
+FE tempF;
+	for(i=0;i<tempH.FSuse;i++){
+	fread(&tempF,sizeof(FE),1,disco);
+		if(strcmp(tempF.filename,filename)==0){
+		
+		return tempF;		
+		}
+
+	}
+strcpy(tempF.filename,"NULL");
+return tempF;
 }
 
 void main(int argc, char*argv[]){
@@ -350,7 +369,7 @@ if(strcmp(argv[1],"-a")==0)
 		}
 		fseek (mp3, 0, SEEK_END);
     		long size=ftell (mp3);
-		
+		printf("sizeenadd = %ld \n",size);
 		strcpy(tempF.filename,argv[2]);
 		
 		tempF.pointer_inodo=libre(disco);
@@ -383,7 +402,7 @@ if(strcmp(argv[1],"-a")==0)
 			}
 		
 		
-		addFE(tempF,tempH,tamfor,disco);
+		addFE(tempF,tempH,disco);
 		
 		fseek(disco,0,0);
 		tempH.FSuse=tempH.FSuse+1;
@@ -397,6 +416,44 @@ if(strcmp(argv[1],"-a")==0)
 	}
 
 
+
+	if(strcmp(argv[1],"-e")==0)
+	{
+	FILE* exp;	
+			if(argc!=5){
+			printf("FALTAS DE ARGUMENTOS");
+			exit(1);
+			}
+
+		if((disco = fopen(argv[4],"rb"))==NULL)
+		{
+		printf("No se pudo abrir el archivo origen.\n");
+		exit(2);
+		}
+
+
+
+
+		FE tempF;
+		tempF=buscar(argv[2],disco);
+			if(strcmp(tempF.filename,"NULL")==0){
+			printf("No se encuentra el archivo.\n");
+			exit(4);		
+			}
+			if((exp = fopen(argv[3],"wb"))==NULL)
+			{
+			printf("No se pudo abrir el archivo destino.\n");
+			exit(3);
+			}
+			
+			inodo ind;
+			movetoblock(tempF.pointer_inodo,disco);
+			fread(&ind,sizeof(ind),1,disco);
+			int size= ind.size_byte;
+			int numb= ind.num_bloques;
+			
+
+	}
 
 }
 
