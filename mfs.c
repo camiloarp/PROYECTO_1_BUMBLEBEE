@@ -39,9 +39,9 @@ int pointer_directo[12];
 int pointer_indirecto;
 int pointer_inderectodoble;
 int pointer_FE;
+int num_bloques;
 char tags[250];
 char tag_cancion[128];
-int num_bloques;
 }inodo;
 
 typedef struct
@@ -84,34 +84,37 @@ fseek(disco,(cual*1024),0);
 }
 
 void placeinodo(int FE,long size,int donde,FILE* disco,FILE* mp3,char* tag){
-inodo ind;
+inodo ind2;
 fseek(mp3,0,0);
 unsigned char *block;
 unsigned char *tagg;
-tag = (unsigned char  *)malloc(sizeof(unsigned char )*124);
+tagg = (unsigned char  *)malloc(sizeof(unsigned char )*128);
 block = (unsigned char  *)malloc(sizeof(unsigned char )*1024);
-ind.size_byte=size;
-printf("size en ind = %d \n",ind.size_byte);
+ind2.size_byte=size;
+ind2.num_bloques=0;
 int sizedec=size;
-ind.pointer_FE=FE;
-strcpy (ind.tags,tag);
+ind2.pointer_FE=FE;
+strcpy (ind2.tags,tag);
+int bloquesc=0;
 int i;
 	for(i=0;i<12;i++){
 		if(sizedec>0){
-		ind.pointer_directo[i]=libre(disco);
-		cambiar(disco,ind.pointer_directo[i],'1');
+		ind2.pointer_directo[i]=libre(disco);
+		cambiar(disco,ind2.pointer_directo[i],'1');
 		fread(block,1024,1,mp3);
-		movetoblock(ind.pointer_directo[i],disco);
+		movetoblock(ind2.pointer_directo[i],disco);
 		fwrite(block,1024,1,disco);
 		sizedec=sizedec-1024;
-		ind.num_bloques++;
+		bloquesc++;
+		
 		}
 
 	}
+	
 	apunt apu;
 	if(sizedec>0){
-	ind.pointer_indirecto=libre(disco);
-	cambiar(disco,ind.pointer_indirecto,'1');
+	ind2.pointer_indirecto=libre(disco);
+	cambiar(disco,ind2.pointer_indirecto,'1');
 	int o;
 		for(o=0;o<256;o++){
 			if(sizedec>0){
@@ -122,18 +125,18 @@ int i;
 			fread(block,1024,1,mp3);
 			fwrite(block,1024,1,disco);
 			sizedec=sizedec-1024;
-			ind.num_bloques++;
+			bloquesc++;
 			}
 		}
-	movetoblock(ind.pointer_indirecto,disco);
+	movetoblock(ind2.pointer_indirecto,disco);
 	fwrite(&apu,1024,1,disco);
 
 	}
 
 	apunt apu1;
 	if(sizedec>0){
-	ind.pointer_inderectodoble=libre(disco);
-	cambiar(disco,ind.pointer_inderectodoble,'1');
+	ind2.pointer_inderectodoble=libre(disco);
+	cambiar(disco,ind2.pointer_inderectodoble,'1');
 	int a;
 		for(a=0;a<256;a++){
 			if(sizedec>0){
@@ -148,10 +151,13 @@ int i;
 					apu2.apuntadores[c]=lib1;
 					cambiar(disco,lib1,'1');
 					movetoblock(lib1,disco);
+					//printf("ftell%d : %ld ",c,ftell(disco));
 					fread(block,1024,1,mp3);
 					fwrite(block,1024,1,disco);
 					sizedec=sizedec-1024;
-					ind.num_bloques++;
+					bloquesc++;
+					//printf("  sizedec: %d  numb: %d\n",sizedec,ind.num_bloques); 
+					
 					}
 				}
 			movetoblock(lib,disco);
@@ -159,19 +165,21 @@ int i;
 			
 			}
 		}
-	movetoblock(ind.pointer_inderectodoble,disco);
+	movetoblock(ind2.pointer_inderectodoble,disco);
 	fwrite(&apu1,1024,1,disco);
 
 	}
+
+ind2.num_bloques=bloquesc;
 fseek(mp3,0,0);
 fseek(mp3,size-125,0);
 fread(tagg,125,1,mp3);
-strcpy(ind.tag_cancion,tagg);
-
+strcpy(ind2.tag_cancion,tagg);
 movetoblock(donde,disco);
-printf("ftell: %ld \n",ftell(disco));
-fwrite(&ind,1024,1,disco);
-
+printf("ftellind: %ld \n",ftell(disco));
+printf("size: %d\n",ind2.size_byte);
+printf("numb: %d\n",ind2.num_bloques);
+fwrite(&ind2,1024,1,disco);
 
 }
 
@@ -268,6 +276,7 @@ int i;
 FE tempF;
 	for(i=0;i<tempH.FSuse;i++){
 	fread(&tempF,sizeof(FE),1,disco);
+	printf("tempf :%s , filename: %s \n",tempF.filename,filename);
 		if(strcmp(tempF.filename,filename)==0){
 		
 		return tempF;		
@@ -284,7 +293,6 @@ FILE *mp3;
 header tempH;
 FE tempF;
 TE tempT;
-inodo ind;
 apunt apuntadores;
 	if(strcmp(argv[1],"-c")==0)
 	{
@@ -332,7 +340,6 @@ apunt apuntadores;
 		fwrite(block,1024,1,disco);
 		int tamfor = tempH.tam_mapabits;		
 		movetoblock(tamfor+1,disco);
-		memset(tempF.filename,'z',60);
 		memset(tempT.tag,'z',28);
 		int g;
 		for(g=0;g<tempH.cant_FS*(1024/sizeof(tempF));g++){
@@ -378,6 +385,7 @@ if(strcmp(argv[1],"-a")==0)
 		int tamfor = tempH.tam_mapabits;
 		int tamforT=tamfor+tempH.cant_FS;
 		placeinodo(tamfor+tempH.FSuse+1,size,tempF.pointer_inodo,disco,mp3,tempT.tag);
+		
 		tempH=getheader(disco);
 		tempT.pointer=libre(disco);
 		int istagg=istag(tempH.TSuse,tamforT+1,tempT,disco);
@@ -436,6 +444,7 @@ if(strcmp(argv[1],"-a")==0)
 
 		FE tempF;
 		tempF=buscar(argv[2],disco);
+		printf("pointer: %d\n",tempF.pointer_inodo);
 			if(strcmp(tempF.filename,"NULL")==0){
 			printf("No se encuentra el archivo.\n");
 			exit(4);		
@@ -446,12 +455,75 @@ if(strcmp(argv[1],"-a")==0)
 			exit(3);
 			}
 			
-			inodo ind;
+			inodo ind1;
 			movetoblock(tempF.pointer_inodo,disco);
-			fread(&ind,sizeof(ind),1,disco);
-			int size= ind.size_byte;
-			int numb= ind.num_bloques;
+			printf("ftell indo expo: %ld \n",ftell(disco));
+			fread(&ind1,sizeof(inodo),1,disco);
+			int size= ind1.size_byte;
+			int numb= ind1.num_bloques;
+			printf("cantidad de bloques: %d \n ",numb);
+			printf("size: %d \n ",size);
+			unsigned char *block;
+			block = (unsigned char  *)malloc(sizeof(unsigned char )*1024);
+			int i;
+			for(i=0;i<12;i++){
+				if(numb>1){
+				movetoblock(ind1.pointer_directo[i],disco);
+				fread(block,1024,1,disco);
+				fwrite(block,1024,1,exp);
+				numb--;
+				size=size-1024;
+				}
+
+			}
+
+				if(numb>1){
+				movetoblock(ind1.pointer_indirecto,disco);
+				apunt apu;
+				fread(&apu,sizeof(apunt),1,disco);
+				int o;
+					for(o=0;o<256;o++){
+						if(numb>1){
+							movetoblock(apu.apuntadores[o],disco);
+							fread(block,1024,1,disco);
+							fwrite(block,1024,1,exp);
+							size=size-1024;
+							numb--;
+						}
+					}
+
+				}
+
+			if(numb>1){
+			movetoblock(ind1.pointer_inderectodoble,disco);
+			apunt apu1;
+			fread(&apu1,sizeof(apunt),1,disco);
+			int a;
+				for(a=0;a<256;a++){
+					if(numb>1){
+					movetoblock(apu1.apuntadores[a],disco);
+					int c;
+					apunt apu2;
+					fread(&apu2,sizeof(apunt),1,disco);
+						for(c=0;c<256;c++){
+							if(numb>1){
+							movetoblock(apu2.apuntadores[c],disco);
+							printf("ftell%d : %ld ",c,ftell(disco));
+							fread(block,1024,1,disco);
+							fwrite(block,1024,1,exp);
+							size=size-1024;
+							numb--;
+							printf("  size: %d  numb: %d\n",size,numb); 
+							}
+						}
+
 			
+					}
+				}
+
+		}
+		fclose(disco);
+		fclose(exp);	
 
 	}
 
