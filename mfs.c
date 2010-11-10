@@ -151,12 +151,10 @@ int i;
 					apu2.apuntadores[c]=lib1;
 					cambiar(disco,lib1,'1');
 					movetoblock(lib1,disco);
-					//printf("ftell%d : %ld ",c,ftell(disco));
 					fread(block,1024,1,mp3);
 					fwrite(block,1024,1,disco);
 					sizedec=sizedec-1024;
-					bloquesc++;
-					//printf("  sizedec: %d  numb: %d\n",sizedec,ind.num_bloques); 
+					bloquesc++; 
 					
 					}
 				}
@@ -176,9 +174,6 @@ fseek(mp3,size-125,0);
 fread(tagg,125,1,mp3);
 strcpy(ind2.tag_cancion,tagg);
 movetoblock(donde,disco);
-printf("ftellind: %ld \n",ftell(disco));
-printf("size: %d\n",ind2.size_byte);
-printf("numb: %d\n",ind2.num_bloques);
 fwrite(&ind2,1024,1,disco);
 
 }
@@ -276,7 +271,6 @@ int i;
 FE tempF;
 	for(i=0;i<tempH.FSuse;i++){
 	fread(&tempF,sizeof(FE),1,disco);
-	printf("tempf :%s , filename: %s \n",tempF.filename,filename);
 		if(strcmp(tempF.filename,filename)==0){
 		
 		return tempF;		
@@ -376,7 +370,6 @@ if(strcmp(argv[1],"-a")==0)
 		}
 		fseek (mp3, 0, SEEK_END);
     		long size=ftell (mp3);
-		printf("sizeenadd = %ld \n",size);
 		strcpy(tempF.filename,argv[2]);
 		
 		tempF.pointer_inodo=libre(disco);
@@ -444,7 +437,6 @@ if(strcmp(argv[1],"-a")==0)
 
 		FE tempF;
 		tempF=buscar(argv[2],disco);
-		printf("pointer: %d\n",tempF.pointer_inodo);
 			if(strcmp(tempF.filename,"NULL")==0){
 			printf("No se encuentra el archivo.\n");
 			exit(4);		
@@ -457,12 +449,9 @@ if(strcmp(argv[1],"-a")==0)
 			
 			inodo ind1;
 			movetoblock(tempF.pointer_inodo,disco);
-			printf("ftell indo expo: %ld \n",ftell(disco));
 			fread(&ind1,sizeof(inodo),1,disco);
 			int size= ind1.size_byte;
 			int numb= ind1.num_bloques;
-			printf("cantidad de bloques: %d \n ",numb);
-			printf("size: %d \n ",size);
 			unsigned char *block;
 			block = (unsigned char  *)malloc(sizeof(unsigned char )*1024);
 			int i;
@@ -508,12 +497,11 @@ if(strcmp(argv[1],"-a")==0)
 						for(c=0;c<256;c++){
 							if(numb>1){
 							movetoblock(apu2.apuntadores[c],disco);
-							printf("ftell%d : %ld ",c,ftell(disco));
 							fread(block,1024,1,disco);
 							fwrite(block,1024,1,exp);
 							size=size-1024;
 							numb--;
-							printf("  size: %d  numb: %d\n",size,numb); 
+							
 							}
 						}
 
@@ -522,6 +510,12 @@ if(strcmp(argv[1],"-a")==0)
 				}
 
 		}
+		
+		unsigned char *finalb;
+		finalb = (unsigned char  *)malloc(sizeof(unsigned char )*size);
+		fread(finalb,size,1,disco);
+		fwrite(finalb,size,1,exp);
+		
 		fclose(disco);
 		fclose(exp);	
 
