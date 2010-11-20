@@ -14,14 +14,18 @@ SOURCES += main.cpp\
         mainwindow.cpp \
     add_dir.cpp \
     add_disk.cpp \
-    add_song.cpp
+    add_song.cpp \
+    discog.cpp
 
 HEADERS  += mainwindow.h \
     add_dir.h \
     add_disk.h \
-    add_song.h
+    add_song.h \
+    discog.h
 
 FORMS    += mainwindow.ui \
     add_dir.ui \
     add_disk.ui \
     add_song.ui
+
+RESOURCES +=

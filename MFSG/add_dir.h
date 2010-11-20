@@ -16,8 +16,6 @@ public:
     explicit ADD_DIR(QWidget *parent = 0);
     ~ADD_DIR();
     QString clocation;
-    QString dlocation;
-    QString mlocation;
 
 private:
     Ui::ADD_DIR *ui;

@@ -6,12 +6,16 @@ MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
 {
-    ui->setupUi(this);
 
+    ui->setupUi(this);
+    this->discovir = new DiscoG();
+    this->discovir->setrefencia(204800,0,0);
+    this->ui->gridLayout->addWidget(this->discovir,0,0,1,1);
     //////// connect signals
     ps.setProcessChannelMode(QProcess::MergedChannels);
     connect(&ps, SIGNAL(readyRead()), this, SLOT(on_cmdExec_data_available()));
     connect(&ps, SIGNAL(finished(int)), this, SLOT(on_cmdExec_finish(int)));
+
     ////////////////////////
 }
 
@@ -24,9 +28,13 @@ void MainWindow::on_pushButton_exec_clicked() {
 
     output = "";
     QString comando;
-    comando="-c 204800 7 32 ";
-    comando.append(this->r.dlocation);
-    ps.start(this->r.clocation, comando.split(" "));
+    QString location;
+    location=this->r.clocation;
+    location.append("mfs.bin");
+    ps.setWorkingDirectory(this->r.clocation);
+    comando="-play";
+    ps.start(location, comando.split(" "));
+    this->ui->pushButton_exec->setDisabled(true);
 }
 
 void MainWindow::on_cmdExec_finish(int a) {
@@ -50,6 +58,7 @@ r.exec();
 void MainWindow::on_actionNEW_DISK_triggered()
 {
    d.exec();
+   ps.setWorkingDirectory(this->r.clocation);
    output = "";
    QString comando;
    comando="-c ";
@@ -59,9 +68,11 @@ void MainWindow::on_actionNEW_DISK_triggered()
    comando.append(" ");
    comando.append(d.te);
    comando.append(" ");
-   comando.append(this->r.dlocation);
    comando.append(d.dname);
-   ps.start(this->r.clocation, comando.split(" "));
+   QString location;
+   location=this->r.clocation;
+   location.append("mfs.bin");
+   ps.start(location, comando.split(" "));
 
 
 }
@@ -74,8 +85,22 @@ void MainWindow::on_actionADD_SONG_triggered()
    comando="-a ";
    comando.append(s.filename);
    comando.append(" ");
-   comando.append(this->r.dlocation);
    comando.append(this->s.disk);
    ps.start(this->r.clocation, comando.split(" "));
+
+
+}
+
+void MainWindow::on_STOP_clicked()
+{
+    ps.kill();
+    output = "";
+    QString comando;
+    QString location;
+    location=this->r.clocation;
+    location.append("mfs.bin");
+    ps.setWorkingDirectory(this->r.clocation);
+    comando="-terminate";
+    ps.execute(location, comando.split(" "));
 
 }

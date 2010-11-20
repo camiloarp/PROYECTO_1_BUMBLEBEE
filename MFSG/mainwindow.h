@@ -7,6 +7,10 @@
 #include "add_dir.h"
 #include "add_disk.h"
 #include "add_song.h"
+#include "discog.h"
+#include <QPainter>
+#include <QSound>
+
 
 namespace Ui {
     class MainWindow;
@@ -25,11 +29,14 @@ private:
     Ui::MainWindow *ui;
     QProcess ps;
     QString output;
+    QSound *wav;
     ADD_DIR r;
     add_disk d;
     add_song s;
+    DiscoG *discovir;
 
 private slots:
+    void on_STOP_clicked();
     void on_actionADD_SONG_triggered();
     void on_actionNEW_DISK_triggered();
     void on_actionADD_DIR_triggered();

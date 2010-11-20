@@ -69,6 +69,20 @@ void cambiar(FILE *disco,int cual,char por){
 	fwrite(block,1024,1,disco);
 
 }
+
+void imprimir_mapa(FILE *disco,int tam){
+fseek(disco,0,0);
+fseek(disco,1024,0);
+
+char *block;
+block = (unsigned char  *)malloc(sizeof(unsigned char )*1024);
+int i;
+	for(i=0;i<tam;i++){
+		fread(block,1024,1,disco);
+		printf("%s",block);
+	}
+
+}
 header getheader(FILE *disco){
 header tempH;
 fseek(disco,0,0);
@@ -385,6 +399,7 @@ apunt apuntadores;
 		printf("No se pudo abrir el archivo origen.\n");
 		exit(2);
 		}
+		
 		char *block;
 		block = (char *)malloc(sizeof(char)*1024);
 		memset(block,'0',1024);
@@ -413,16 +428,20 @@ apunt apuntadores;
 		for(d=0;d<tempH.inicio_data;d++){		
 		block[d]='1';
 		}
-
-		fseek(disco,1024,SEEK_SET);
+		//printf("%s",block);
+;		fseek(disco,1024,SEEK_SET);
 		fwrite(block,1024,1,disco);
-		int tamfor = tempH.tam_mapabits;		
+		int tamfor = tempH.tam_mapabits;
+		imprimir_mapa(disco,tamfor);	
+			
 		movetoblock(tamfor+1+tempH.cant_FS,disco);
 		memset(tempT.tag,'z',28);
 		int h;
 		for(h=0;h<tempH.cant_TS*(1024/sizeof(tempT));h++){
 		fwrite(&tempT,sizeof(tempT),1,disco);
 		}
+		
+		
 		
 		fclose(disco);
 
@@ -902,6 +921,47 @@ if(strcmp(argv[1],"-d")==0)
 
 
 	}
+
+
+	if(strcmp(argv[1],"-ma")==0)
+	{
+		
+		if(argc!=3){
+		printf("FALTAS DE ARGUMENTOS");
+		 exit(1);
+			}
+
+		if((disco = fopen(argv[2],"rb"))==NULL)
+		{
+		printf("No se pudo abrir el archivo origen.\n");
+		exit(2);
+		}
+		tempH=getheader(disco);
+		imprimir_mapa(disco,tempH.tam_mapabits);
+	fclose(disco);
+	}
+
+
+	
+	if(strcmp(argv[1],"-install")==0)
+	{
+	system( "gksudo -S apt-get install mpg123" );
+	}
+	
+	if(strcmp(argv[1],"-play")==0)
+	{
+	system( "./mpg123.bin play.mp3"
+ 	);
+	
+	}
+
+	if(strcmp(argv[1],"-terminate")==0)
+	{
+	system( "pkill mpg123.bin");
+ 	
+	
+	}
+
 
 }
 

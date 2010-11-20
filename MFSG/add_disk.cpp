@@ -6,6 +6,10 @@ add_disk::add_disk(QWidget *parent) :
     ui(new Ui::add_disk)
 {
     ui->setupUi(this);
+    this->ui->le_dname->setText("disco.dat");
+    this->ui->le_size->setText("204800");
+    this->ui->le_te->setText("7");
+    this->ui->le_fe->setText("32");
 
 }
 
