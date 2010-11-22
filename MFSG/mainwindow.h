@@ -24,6 +24,7 @@ class MainWindow : public QMainWindow
 public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
+    void getid();
 
 private:
     Ui::MainWindow *ui;
@@ -34,8 +35,10 @@ private:
     add_disk d;
     add_song s;
     DiscoG *discovir;
+    int acti;
 
 private slots:
+
     void on_STOP_clicked();
     void on_actionADD_SONG_triggered();
     void on_actionNEW_DISK_triggered();

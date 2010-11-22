@@ -382,6 +382,7 @@ void taggear(header tempH,int tamforT,TE tempT,FILE* disco,FE tempF,apunt apunta
 void main(int argc, char*argv[]){
 FILE *disco;
 FILE *mp3;
+FILE *id;
 header tempH;
 FE tempF;
 TE tempT;
@@ -945,21 +946,68 @@ if(strcmp(argv[1],"-d")==0)
 	
 	if(strcmp(argv[1],"-install")==0)
 	{
-	system( "gksudo -S apt-get install mpg123" );
+
+		if(argc!=2){
+		printf("FALTAS DE ARGUMENTOS");
+		 exit(1);
+			}
+	system( "gksudo -S sh installmpg.sh" );
 	}
 	
 	if(strcmp(argv[1],"-play")==0)
 	{
-	system( "./mpg123.bin play.mp3"
- 	);
+
+		if(argc!=4){
+		printf("FALTAS DE ARGUMENTOS");
+		 exit(1);
+			}
+	char *comando;
+	comando = (char  *)malloc(sizeof(char )*125);
+	system("rm -f play.mp3");
+	strcpy(comando,"./mfs.bin -e ");
+	strcat(comando,argv[2]);
+	strcat(comando," play.mp3 ");
+	strcat(comando,argv[3]);
+	system(comando);
+	system( "./mpg123.bin play.mp3");
 	
 	}
 
-	if(strcmp(argv[1],"-terminate")==0)
+
+	if(strcmp(argv[1],"-pause")==0)
 	{
-	system( "pkill mpg123.bin");
+	
+		if(argc!=2){
+		printf("FALTAS DE ARGUMENTOS");
+		 exit(1);
+			}
+	system("pkill -STOP mpg123.bin");
+
+	
+	}
+
+	if(strcmp(argv[1],"-conti")==0)
+	{
+
+	if(argc!=2){
+		printf("FALTAS DE ARGUMENTOS");
+		 exit(1);
+			}
+	system("pkill -CONTI mpg123.bin");
  	
 	
+	}
+	
+
+	if(strcmp(argv[1],"-kill")==0)
+	{
+
+		if(argc!=2){
+		printf("FALTAS DE ARGUMENTOS");
+		 exit(1);
+			}	
+		system("pkill mpg123.bin");
+		
 	}
 
 

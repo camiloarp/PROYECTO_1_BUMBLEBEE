@@ -32,7 +32,7 @@ void MainWindow::on_pushButton_exec_clicked() {
     location=this->r.clocation;
     location.append("mfs.bin");
     ps.setWorkingDirectory(this->r.clocation);
-    comando="-play";
+    comando="-play cancion.mp3 disco.dat";
     ps.start(location, comando.split(" "));
     this->ui->pushButton_exec->setDisabled(true);
 }
@@ -100,7 +100,7 @@ void MainWindow::on_STOP_clicked()
     location=this->r.clocation;
     location.append("mfs.bin");
     ps.setWorkingDirectory(this->r.clocation);
-    comando="-terminate";
+    comando="-kill";
     ps.execute(location, comando.split(" "));
 
 }
