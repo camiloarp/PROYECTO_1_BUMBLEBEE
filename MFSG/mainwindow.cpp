@@ -15,7 +15,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ps.setProcessChannelMode(QProcess::MergedChannels);
     connect(&ps, SIGNAL(readyRead()), this, SLOT(on_cmdExec_data_available()));
     connect(&ps, SIGNAL(finished(int)), this, SLOT(on_cmdExec_finish(int)));
-
+    this->pause=0;
     ////////////////////////
 }
 
@@ -102,5 +102,33 @@ void MainWindow::on_STOP_clicked()
     ps.setWorkingDirectory(this->r.clocation);
     comando="-kill";
     ps.execute(location, comando.split(" "));
+
+}
+
+void MainWindow::on_pause_clicked()
+{
+    if(this->pause==0){
+        this->pause=1;
+        ps.kill();
+        output = "";
+        QString comando;
+        QString location;
+        location=this->r.clocation;
+        location.append("mfs.bin");
+        ps.setWorkingDirectory(this->r.clocation);
+        comando="-pause";
+        ps.execute(location, comando.split(" "));
+    }else{
+        this->pause=0;
+        ps.kill();
+        output = "";
+        QString comando;
+        QString location;
+        location=this->r.clocation;
+        location.append("mfs.bin");
+        ps.setWorkingDirectory(this->r.clocation);
+        comando="-conti";
+        ps.execute(location, comando.split(" "));
+    }
 
 }

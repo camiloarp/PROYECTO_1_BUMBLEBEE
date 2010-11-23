@@ -993,7 +993,7 @@ if(strcmp(argv[1],"-d")==0)
 		printf("FALTAS DE ARGUMENTOS");
 		 exit(1);
 			}
-	system("pkill -CONTI mpg123.bin");
+	system("pkill -CONT mpg123.bin");
  	
 	
 	}

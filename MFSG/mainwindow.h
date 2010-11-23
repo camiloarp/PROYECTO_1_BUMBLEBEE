@@ -35,10 +35,11 @@ private:
     add_disk d;
     add_song s;
     DiscoG *discovir;
-    int acti;
+    int pause;
 
 private slots:
 
+    void on_pause_clicked();
     void on_STOP_clicked();
     void on_actionADD_SONG_triggered();
     void on_actionNEW_DISK_triggered();
