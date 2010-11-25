@@ -188,10 +188,10 @@ fseek(mp3,size-125,0);
 fread(tagg,30,1,mp3);
 strcpy(ind2.tag_cancion,tagg);
 fread(tagg,60,1,mp3);
-strcat(ind2.tag_cancion,";");
+strcat(ind2.tag_cancion,"~");
 strcat(ind2.tag_cancion,tagg);
 fread(tagg,34,1,mp3);
-strcat(ind2.tag_cancion,";");
+strcat(ind2.tag_cancion,"~");
 strcat(ind2.tag_cancion,tagg);
 movetoblock(donde,disco);
 fwrite(&ind2,1024,1,disco);
@@ -230,8 +230,9 @@ return -1;
 
 void addFE(FE tempF,header tempH,FILE* disco){
 		int tamfor = tempH.tam_mapabits;
-		movetoblock(tamfor+1+tempH.FSuse,disco);
-		fwrite(&tempF,sizeof(tempF),1,disco);
+		fseek(disco,((tamfor+1)*1024)+(tempH.FSuse*sizeof(FE)),0);
+		printf("ftell FE: %ld \n",ftell(disco));
+		fwrite(&tempF,sizeof(FE),1,disco);
 }
 
 void removeFE(FE tempF,header tempH,FILE* disco){
@@ -240,7 +241,7 @@ int i;
 int tamfor = tempH.tam_mapabits;
 int here;
 	for(i=0;i<tempH.FSuse;i++){
-	movetoblock(tamfor+1+i,disco);
+	fseek(disco,((tamfor+1)*1024)+(i*sizeof(FE)),0);
 	fread(&TFE,sizeof(FE),1,disco);
 	if(strcmp(tempF.filename,TFE.filename)==0){
 		here = i;
@@ -249,9 +250,9 @@ int here;
 int c;
 
 	for(c=here;c<tempH.FSuse-1;c++){
-	movetoblock(tamfor+1+c+1,disco);
+	fseek(disco,((tamfor+1)*1024)+((c+1)*sizeof(FE)),0);
 	fread(&TFE,sizeof(FE),1,disco);
-	movetoblock(tamfor+1+c,disco);
+	fseek(disco,((tamfor+1)*1024)+((c)*sizeof(FE)),0);
 	fwrite(&TFE,sizeof(FE),1,disco);
 	}
 fseek(disco,0,0);
@@ -453,14 +454,18 @@ apunt apuntadores;
 if(strcmp(argv[1],"-a")==0)
 	{
 		
-			if(argc!=5){
-			printf("FALTAS DE ARGUMENTOS");
+			if(argc<5){
+			printf("FALTA DE ARGUMENTOS");
+			exit(1);
+			}
+			if(argc>5){
+			printf("MUCHOS DE ARGUMENTOS");
 			exit(1);
 			}
 
-		if((mp3 = fopen(argv[2],"rb+"))==NULL)
+		if((mp3 = fopen(argv[2],"rb"))==NULL)
 		{
-		printf("No se pudo abrir el archivo origen.\n");
+		printf("No se pudo abrir el mp3 origen.\n");
 		exit(2);
 		}
 		if((disco = fopen(argv[4],"rb+"))==NULL)
@@ -470,6 +475,24 @@ if(strcmp(argv[1],"-a")==0)
 		}
 		fseek (mp3, 0, SEEK_END);
     		long size=ftell (mp3);
+/*
+		//char file[60];
+		char *file;
+		file = (char *)malloc(sizeof(char)*60);
+		/*strcpy(file,argv[2]);
+		int sizefile = strlen(file);
+		printf("char %s \n",file[1]);
+		
+		 /*   QString file="";
+    for(int i=0;i<filename.size();i++){
+        if(filename.at(i)!='/'){
+          file.append(filename.at(i));
+      }else{
+          file=""; 
+        }
+
+    }*/
+
 		strcpy(tempF.filename,argv[2]);
 		
 		tempF.pointer_inodo=libre(disco);
@@ -478,7 +501,7 @@ if(strcmp(argv[1],"-a")==0)
 		tempH=getheader(disco);
 		int tamfor = tempH.tam_mapabits;
 		int tamforT=tamfor+tempH.cant_FS;
-		placeinodo(tamfor+tempH.FSuse+1,size,tempF.pointer_inodo,disco,mp3,tempT.tag);		
+		placeinodo(tempH.FSuse,size,tempF.pointer_inodo,disco,mp3,tempT.tag);		
 		tempT.pointer=libre(disco);
 		taggear(tempH,tamforT,tempT,disco,tempF,apuntadores);
 		tempH=getheader(disco);	
@@ -734,24 +757,13 @@ if(strcmp(argv[1],"-q")==0)
 		printf("No se encuentra el archivo.\n");
 		exit(3);
 		}
-		if((inodofile = fopen("inodo.ind","wb"))==NULL)
-		{
-		printf("No se pudo abrir el archivo origen.\n");
-		exit(2);
-		}
-		inodo ind4;
-		movetoblock(tempF.pointer_inodo,disco);
-		fread(&ind4,sizeof(inodo),1,disco);
-		fwrite(&ind4,sizeof(inodo),1,inodofile);
-		fclose(inodofile);
-		fclose(disco);
-
+		printf("%d",tempF.pointer_inodo);
 
 	}
 
 if(strcmp(argv[1],"-qi")==0)
 	{
-	FILE* inodofile1;	
+	int inodofile1;	
 		if(argc!=4){
 		printf("FALTAS DE ARGUMENTOS");
 		 exit(1);
@@ -762,25 +774,23 @@ if(strcmp(argv[1],"-qi")==0)
 		printf("No se pudo abrir el archivo origen.\n");
 		exit(2);
 		}
-
-		if((inodofile1 = fopen(argv[2],"rb"))==NULL)
-		{
-		printf("No se pudo abrir el archivo origen.\n");
-		exit(2);
-		}
-		
+		tempH=getheader(disco);
+		int here=tempH.tam_mapabits+1;
+		inodofile1=atoi(argv[2]);
+		movetoblock(inodofile1,disco);
 		inodo ind5;
-		fread(&ind5,sizeof(inodo),1,inodofile1);
-		movetoblock(ind5.pointer_FE,disco);
+		fread(&ind5,sizeof(inodo),1,disco);
+		fseek(disco,0,0);
+		fseek(disco,(here*1024)+ind5.pointer_FE*sizeof(FE),0);
 		fread(&tempF,sizeof(FE),1,disco);
-		printf("%s//",tempF.filename);
-		printf("%d//",ind5.size_byte);
-		printf("%s//",ind5.tags);
-		printf("%s\n",ind5.tag_cancion);
+		printf("%s;",tempF.filename);
+		printf("%d;",ind5.size_byte);
+		printf("%s;",ind5.tags);
+		printf("%s",ind5.tag_cancion);
 	
 
 				
-		fclose(inodofile1);
+
 		fclose(disco);
 
 
@@ -808,10 +818,10 @@ if(strcmp(argv[1],"-qa")==0)
 		inodo ind6;
 		movetoblock(tempF.pointer_inodo,disco);
 		fread(&ind6,sizeof(inodo),1,disco);
-		printf("%s//",tempF.filename);
-		printf("%d//",ind6.size_byte);
-		printf("%s//",ind6.tags);
-		printf("%s\n",ind6.tag_cancion);
+		printf("%s;",tempF.filename);
+		printf("%d;",ind6.size_byte);
+		printf("%s;",ind6.tags);
+		printf("%s",ind6.tag_cancion);
 	
 
 				
@@ -1008,7 +1018,21 @@ if(strcmp(argv[1],"-d")==0)
 			}	
 		system("pkill mpg123.bin");
 		
+	}	
+
+	if(strcmp(argv[1],"-rename")==0)
+	{
+
+		if(argc!=2){
+		printf("FALTAS DE ARGUMENTOS");
+		 exit(1);
+			}
+		system("cd /home/camilo/Music");	
+		system("rename 's/\ /\_/g' *");
+		
 	}
+
+	
 
 
 }

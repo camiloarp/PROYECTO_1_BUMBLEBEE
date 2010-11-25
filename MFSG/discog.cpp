@@ -5,10 +5,12 @@ DiscoG::DiscoG(QWidget *parent) :
 {
 }
 
-void DiscoG::setrefencia(int block,int FS,int TS){
+void DiscoG::setrefencia(int block,int FS,int TS,QString mapa,int page){
     this->block=block;
     this->FS=FS;
     this->TS=TS;
+    this->mapa=mapa;
+    this->page=page;
 
 }
 
@@ -18,36 +20,63 @@ void DiscoG::paintEvent(QPaintEvent *event){
     painter.setPen( Qt::black ); // La pluma en como vamos a dibujar es negra
     painter.setBrush(Qt::white);
     painter.drawRect(0,0,this->width()-1,this->height()-1);
-    for(int i=0;i<17;i++){
-        if(i==0){
-            painter.setBrush(Qt::cyan);
-            painter.drawRect(0,i*(500/16),this->width(),(500/16));
 
-        }
-        if(i==1){
-            painter.setBrush(Qt::magenta);
-            painter.drawRect(0,i*(500/16),this->width(),(500/16));
-            int tam_m=(this->block/8)/1024;
-            int wi=this->width()/tam_m;
-            for(int m=0;m<tam_m;m++){
-                painter.drawLine(wi*(m+1),(500/16)*i,wi*(m+1),(500/16)*(i+1));
+    for(int i=0;i<100;i++){
+        if(this->mapa.size()>0){
+            if(this->page==0){
+                if(i==0){
+                    painter.setBrush(Qt::magenta);
+                }
+                int poraqui=1+(this->block/8)/1024;
+                if(i<poraqui&&i!=0){
+                    painter.setBrush(Qt::yellow);
+                }
+                int por1 = poraqui + this->FS;
+                if(i<por1&&i>poraqui){
+                    painter.setBrush(Qt::red);
+                }
+                int por2 = por1+this->TS;
+                if(i<por2&&i>por1){
+                    painter.setBrush(Qt::darkMagenta);
+                }
+                if(i>por2){
+                    if(this->mapa.at(i+(this->page*100))=='1'){
+                         painter.setBrush(Qt::cyan);
+                            }else{
+                                 painter.setBrush(Qt::green);
+                            }
+                }
+            }else{
+                 if(this->mapa.at(i+(this->page*100))=='1'){
+                      painter.setBrush(Qt::cyan);
+                         }else{
+                              painter.setBrush(Qt::green);
+                         }
+                 }
             }
-        }
-        if(i==2){
-            painter.setBrush(Qt::darkYellow);
-            painter.drawRect(0,i*(500/16),this->width(),(500/16));
-        }
-        if(i==3){
-            painter.setBrush(Qt::darkCyan);
-            painter.drawRect(0,i*(500/16),this->width(),(500/16));
-        }
-        if(i>=4){
-            painter.setBrush(Qt::darkMagenta);
-            painter.drawRect(0,i*(500/16),this->width(),(500/16));
-        }
-        //painter.drawLine(0,(509/25)*(i+1),this->width(),(509/25)*(i+1));
-
-
+        painter.drawRect(i*7,0,7,this->height()-1);
     }
+    /*int w = (100/this->block)+1;
+    int header = (w * this->width())/100;
+
+   painter.drawRect(0,0,2,this->height()-1);
+   painter.setBrush(Qt::magenta);
+    int tam_m=((this->block*1024)/8)/1024;
+    int ww = ((tam_m*100)/this->block)+1;
+    int mb= (ww*this->width())/100;
+    painter.drawRect(header+1,0,mb,this->height()-1);
+    painter.setBrush(Qt::yellow);
+
+    int www = ((this->FS*100)/this->block)+1;
+    int fsb= (www*this->width())/100;
+    painter.drawRect(header+mb+1,0,fsb,this->height()-1);
+
+    painter.setBrush(Qt::blue);
+   int q = ((this->TS*100)/this->block)+1;
+    int tsb= (q*this->width())/100;
+    painter.drawRect(header+mb+fsb+1,0,tsb,this->height()-1);
+    painter.setBrush(Qt::green);
+    painter.drawRect(header+mb+fsb+tsb+1,0,this->width()-(header+mb+fsb+tsb+2),this->height()-1);*/
+
 
 }

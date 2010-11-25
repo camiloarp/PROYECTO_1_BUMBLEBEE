@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>397</width>
+    <width>713</width>
     <height>180</height>
    </rect>
   </property>
@@ -16,8 +16,8 @@
   <widget class="QDialogButtonBox" name="buttonBox">
    <property name="geometry">
     <rect>
-     <x>20</x>
-     <y>110</y>
+     <x>330</x>
+     <y>130</y>
      <width>341</width>
      <height>32</height>
     </rect>
@@ -45,9 +45,9 @@
   <widget class="QLineEdit" name="le_clocation">
    <property name="geometry">
     <rect>
-     <x>190</x>
+     <x>150</x>
      <y>50</y>
-     <width>161</width>
+     <width>411</width>
      <height>27</height>
     </rect>
    </property>
@@ -63,6 +63,19 @@
    </property>
    <property name="text">
     <string/>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="browse">
+   <property name="geometry">
+    <rect>
+     <x>570</x>
+     <y>50</y>
+     <width>98</width>
+     <height>27</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Browse..</string>
    </property>
   </widget>
  </widget>

@@ -20,3 +20,10 @@ void ADD_DIR::on_buttonBox_accepted()
     this->clocation=this->ui->le_clocation->text();
 
 }
+
+void ADD_DIR::on_browse_clicked()
+{
+    QString directory = QFileDialog::getExistingDirectory(this,
+                               tr("Find Files"), QDir::currentPath());
+    this->ui->le_clocation->setText(directory);
+}

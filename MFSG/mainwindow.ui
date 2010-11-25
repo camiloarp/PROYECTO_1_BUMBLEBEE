@@ -12,7 +12,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>749</width>
+    <width>779</width>
     <height>650</height>
    </rect>
   </property>
@@ -30,8 +30,8 @@
   </property>
   <property name="maximumSize">
    <size>
-    <width>749</width>
-    <height>650</height>
+    <width>1000</width>
+    <height>800</height>
    </size>
   </property>
   <property name="windowTitle">
@@ -44,7 +44,7 @@
       <x>450</x>
       <y>60</y>
       <width>281</width>
-      <height>301</height>
+      <height>131</height>
      </rect>
     </property>
    </widget>
@@ -61,31 +61,13 @@
      <string>PLAY</string>
     </property>
    </widget>
-   <widget class="QWidget" name="gridLayoutWidget">
-    <property name="geometry">
-     <rect>
-      <x>20</x>
-      <y>20</y>
-      <width>401</width>
-      <height>501</height>
-     </rect>
-    </property>
-    <layout class="QGridLayout" name="gridLayout">
-     <property name="sizeConstraint">
-      <enum>QLayout::SetDefaultConstraint</enum>
-     </property>
-     <item row="0" column="0">
-      <widget class="QListWidget" name="listWidget"/>
-     </item>
-    </layout>
-   </widget>
    <widget class="QPushButton" name="STOP">
     <property name="geometry">
      <rect>
       <x>630</x>
       <y>20</y>
       <width>98</width>
-      <height>27</height>
+      <height>31</height>
      </rect>
     </property>
     <property name="text">
@@ -98,11 +80,179 @@
       <x>540</x>
       <y>20</y>
       <width>91</width>
-      <height>27</height>
+      <height>31</height>
      </rect>
     </property>
     <property name="text">
      <string>PAUSE</string>
+    </property>
+   </widget>
+   <widget class="QWidget" name="gridLayoutWidget">
+    <property name="geometry">
+     <rect>
+      <x>20</x>
+      <y>460</y>
+      <width>701</width>
+      <height>80</height>
+     </rect>
+    </property>
+    <layout class="QGridLayout" name="gridLayout">
+     <property name="sizeConstraint">
+      <enum>QLayout::SetDefaultConstraint</enum>
+     </property>
+     <item row="0" column="0">
+      <widget class="QListWidget" name="listWidget"/>
+     </item>
+    </layout>
+   </widget>
+   <widget class="QListWidget" name="tags">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>60</y>
+      <width>151</width>
+      <height>331</height>
+     </rect>
+    </property>
+   </widget>
+   <widget class="QListWidget" name="songs">
+    <property name="geometry">
+     <rect>
+      <x>180</x>
+      <y>60</y>
+      <width>151</width>
+      <height>331</height>
+     </rect>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label">
+    <property name="geometry">
+     <rect>
+      <x>60</x>
+      <y>30</y>
+      <width>67</width>
+      <height>17</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>TAGS</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_2">
+    <property name="geometry">
+     <rect>
+      <x>220</x>
+      <y>30</y>
+      <width>67</width>
+      <height>17</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>SONGS</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="tagsong">
+    <property name="geometry">
+     <rect>
+      <x>460</x>
+      <y>220</y>
+      <width>98</width>
+      <height>27</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>TAG SONG</string>
+    </property>
+   </widget>
+   <widget class="QLineEdit" name="totag">
+    <property name="geometry">
+     <rect>
+      <x>570</x>
+      <y>220</y>
+      <width>161</width>
+      <height>27</height>
+     </rect>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="left">
+    <property name="geometry">
+     <rect>
+      <x>20</x>
+      <y>430</y>
+      <width>51</width>
+      <height>27</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>&lt;&lt;</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="right">
+    <property name="geometry">
+     <rect>
+      <x>70</x>
+      <y>430</y>
+      <width>51</width>
+      <height>27</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>&gt;&gt;</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_3">
+    <property name="geometry">
+     <rect>
+      <x>130</x>
+      <y>430</y>
+      <width>67</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Page: </string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="pglabel">
+    <property name="geometry">
+     <rect>
+      <x>180</x>
+      <y>430</y>
+      <width>67</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>-----</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="begin">
+    <property name="geometry">
+     <rect>
+      <x>20</x>
+      <y>550</y>
+      <width>67</width>
+      <height>17</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>0</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="end">
+    <property name="geometry">
+     <rect>
+      <x>666</x>
+      <y>550</y>
+      <width>51</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>99</string>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
     </property>
    </widget>
   </widget>
@@ -111,7 +261,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>749</width>
+     <width>779</width>
      <height>25</height>
     </rect>
    </property>
@@ -123,7 +273,14 @@
     <addaction name="actionNEW_DISK"/>
     <addaction name="actionADD_SONG"/>
    </widget>
+   <widget class="QMenu" name="menuINSTALL_LIB">
+    <property name="title">
+     <string>INSTALL LIB</string>
+    </property>
+    <addaction name="actionInstall_mpg123"/>
+   </widget>
    <addaction name="menuFILE"/>
+   <addaction name="menuINSTALL_LIB"/>
   </widget>
   <widget class="QToolBar" name="mainToolBar">
    <attribute name="toolBarArea">
@@ -147,6 +304,11 @@
   <action name="actionADD_SONG">
    <property name="text">
     <string>ADD SONG</string>
+   </property>
+  </action>
+  <action name="actionInstall_mpg123">
+   <property name="text">
+    <string>Install mpg123</string>
    </property>
   </action>
  </widget>

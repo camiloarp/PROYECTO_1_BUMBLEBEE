@@ -3,6 +3,8 @@
 
 #include <QDialog>
 #include <QString>
+#include <QFileDialog>
+#include <QDir>
 
 namespace Ui {
     class ADD_DIR;
@@ -19,8 +21,10 @@ public:
 
 private:
     Ui::ADD_DIR *ui;
+        QDir download;
 
 private slots:
+    void on_browse_clicked();
     void on_buttonBox_accepted();
 };
 

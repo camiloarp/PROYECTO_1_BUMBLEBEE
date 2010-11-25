@@ -75,6 +75,19 @@
     <string>DISK</string>
    </property>
   </widget>
+  <widget class="QPushButton" name="Browse">
+   <property name="geometry">
+    <rect>
+     <x>240</x>
+     <y>50</y>
+     <width>98</width>
+     <height>27</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Browse..</string>
+   </property>
+  </widget>
  </widget>
  <resources/>
  <connections>
