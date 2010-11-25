@@ -51,6 +51,7 @@ private slots:
 
 
 
+    void on_borrar_clicked();
     void on_actionInstall_mpg123_triggered();
     void on_left_clicked();
     void on_right_clicked();

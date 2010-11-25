@@ -58,9 +58,11 @@ void MainWindow::on_cmdExec_finish(int a) {
     this->ui->pushButton_exec->setDisabled(false);
     QString temp;
     temp.setNum(a);
-
+    if(this->mapabits==0){
     ui->textEdit_output->append(output);
-
+    }else{
+    this->mapabits=0;
+}
 
 
 }
@@ -117,7 +119,7 @@ void MainWindow::on_actionADD_SONG_triggered()
    s.exec();
    this->ui->tags->clear();
    ps.setWorkingDirectory(this->r.clocation);
-   output = "";
+   output = "-----\nTAG:";
    QString comando;
    comando="-a ";
    comando.append(s.filename);
@@ -128,13 +130,13 @@ void MainWindow::on_actionADD_SONG_triggered()
    QString location;
    location=this->r.clocation;
    location.append("mfs.bin");
-   this->ui->textEdit_output->append(comando);
    ps.start(location, comando.split(" "));
    ps.waitForFinished();
    this->mapadebits();
    this->printtags();
    this->ui->pushButton_exec->setDisabled(false);
    this->ui->tagsong->setDisabled(false);
+
 
 
 }
@@ -327,6 +329,7 @@ void MainWindow::on_right_clicked()
 }
 
 void MainWindow::mapadebits(){
+    this->mapabits=1;
     output = "";
     QString location;
     QString comando;
@@ -381,3 +384,23 @@ void MainWindow::on_actionInstall_mpg123_triggered()
 }
 
 
+
+void MainWindow::on_borrar_clicked()
+{
+
+    output = "";
+    QString comando;
+    QString location;
+    location=this->r.clocation;
+    location.append("mfs.bin");
+    ps.setWorkingDirectory(this->r.clocation);
+    comando="-d ";
+    comando.append(this->ui->songs->selectedItems().at(0)->text());
+    comando.append(" ");
+    comando.append(this->d.dname);
+    ps.start(location,comando.split(" "));
+    ps.waitForFinished();
+    this->ui->tags->clear();
+    this->printtags();
+
+}

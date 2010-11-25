@@ -8,8 +8,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-typedef struct
-{
+	typedef struct{
+
 	int cant_block ;
 	int cant_FS;
 	int cant_TS;
@@ -18,344 +18,366 @@ typedef struct
 	int tam_mapabits;
 	int inicio_data;
 
-}header;
+	}header;
 
-typedef struct
-{
-char filename[60];
-int pointer_inodo;
-}FE;
+	typedef struct{
 
-typedef struct
-{
-char tag[28];
-int pointer;
-}TE;
+	char filename[60];
+	int pointer_inodo;
 
-typedef struct
-{
-int size_byte;
-int pointer_directo[12];
-int pointer_indirecto;
-int pointer_inderectodoble;
-int pointer_FE;
-int num_bloques;
-char tags[250];
-char tag_cancion[128];
-}inodo;
+	}FE;
 
-typedef struct
-{
-int apuntadores[256];
-}apunt;
+	typedef struct{
 
-void cambiar(FILE *disco,int cual,char por){
+	char tag[28];
+	int pointer;
+	
+	}TE;
+
+	typedef struct{
+
+	int size_byte;
+	int pointer_directo[12];
+	int pointer_indirecto;
+	int pointer_inderectodoble;
+	int pointer_FE;
+	int num_bloques;
+	char tags[250];
+	char tag_cancion[128];
+
+	}inodo;
+
+	typedef struct{
+
+	int apuntadores[256];
+	
+	}apunt;
+
+	void cambiar(FILE *disco,int cual,char por){
+	
 	char *block;
 	block = (char *)malloc(sizeof(char)*1024);
 	header tempH;
+	
 	fseek(disco,0,0);
 	fread(&tempH,sizeof(tempH),1,disco);
 	fseek(disco,0,0);
+
 	int tamfor = tempH.tam_mapabits;
-	int blocknum= cual/1024;
-	
+	int blocknum= cual/1024;	
 	int posinblock = cual-(blocknum*1024);
 	
 	fseek(disco,1024+(blocknum)*1024,0);
 	fread(block,1024,1,disco);
+	
 	block[posinblock]=por;
+
 	fseek(disco,0,0),
 	fseek(disco,1024+blocknum*1024,0);
 	fwrite(block,1024,1,disco);
 
-}
-
-void imprimir_mapa(FILE *disco,int tam){
-fseek(disco,0,0);
-fseek(disco,1024,0);
-
-char *block;
-block = (unsigned char  *)malloc(sizeof(unsigned char )*1024);
-int i;
-	for(i=0;i<tam;i++){
-		fread(block,1024,1,disco);
-		printf("%s",block);
 	}
 
-}
-header getheader(FILE *disco){
-header tempH;
-fseek(disco,0,0);
-fread(&tempH,sizeof(tempH),1,disco);
-fseek(disco,0,0);
-return tempH;
-}
+	void imprimir_mapa(FILE *disco,int tam){
 
-void movetoblock(int cual,FILE *disco){
-fseek(disco,0,0);
-fseek(disco,(cual*1024),0);
+	fseek(disco,0,0);
+	fseek(disco,1024,0);
 
-}
+	char *block;
+	block = (unsigned char  *)malloc(sizeof(unsigned char )*1024);
 
-void placeinodo(int FE,long size,int donde,FILE* disco,FILE* mp3,char* tag){
-inodo ind2;
-fseek(mp3,0,0);
-unsigned char *block;
-unsigned char *tagg;
-tagg = (unsigned char  *)malloc(sizeof(unsigned char )*125);
-block = (unsigned char  *)malloc(sizeof(unsigned char )*1024);
-ind2.size_byte=size;
-ind2.num_bloques=0;
-int sizedec=size;
-ind2.pointer_FE=FE;
-strcpy (ind2.tags,tag);
-int bloquesc=0;
-int i;
-	for(i=0;i<12;i++){
-		if(sizedec>0){
-		ind2.pointer_directo[i]=libre(disco);
-		cambiar(disco,ind2.pointer_directo[i],'1');
-		fread(block,1024,1,mp3);
-		movetoblock(ind2.pointer_directo[i],disco);
-		fwrite(block,1024,1,disco);
-		sizedec=sizedec-1024;
-		bloquesc++;
-		
+	int i;
+		for(i=0;i<tam;i++){
+			fread(block,1024,1,disco);
+			printf("%s",block);
 		}
 
 	}
-	
-	apunt apu;
-	if(sizedec>0){
-	ind2.pointer_indirecto=libre(disco);
-	cambiar(disco,ind2.pointer_indirecto,'1');
-	int o;
-		for(o=0;o<256;o++){
-			if(sizedec>0){
-			int lib = libre(disco);
-			cambiar(disco,lib,'1');
-			apu.apuntadores[o]=lib;
-			movetoblock(lib,disco);
-			fread(block,1024,1,mp3);
-			fwrite(block,1024,1,disco);
-			sizedec=sizedec-1024;
-			bloquesc++;
-			}
-		}
-	movetoblock(ind2.pointer_indirecto,disco);
-	fwrite(&apu,1024,1,disco);
 
-	}
-
-	apunt apu1;
-	if(sizedec>0){
-	ind2.pointer_inderectodoble=libre(disco);
-	cambiar(disco,ind2.pointer_inderectodoble,'1');
-	int a;
-		for(a=0;a<256;a++){
-			if(sizedec>0){
-			int lib = libre(disco);
-			cambiar(disco,lib,'1');
-			apu1.apuntadores[a]=lib;
-			int c;
-			apunt apu2;
-				for(c=0;c<256;c++){
-					if(sizedec>0){
-					int lib1=libre(disco);
-					apu2.apuntadores[c]=lib1;
-					cambiar(disco,lib1,'1');
-					movetoblock(lib1,disco);
-					fread(block,1024,1,mp3);
-					fwrite(block,1024,1,disco);
-					sizedec=sizedec-1024;
-					bloquesc++; 
-					
-					}
-				}
-			movetoblock(lib,disco);
-			fwrite(&apu2,1024,1,disco);
-			
-			}
-		}
-	movetoblock(ind2.pointer_inderectodoble,disco);
-	fwrite(&apu1,1024,1,disco);
-
-	}
-
-ind2.num_bloques=bloquesc;
-fseek(mp3,0,0);
-fseek(mp3,size-125,0);
-fread(tagg,30,1,mp3);
-strcpy(ind2.tag_cancion,tagg);
-fread(tagg,60,1,mp3);
-strcat(ind2.tag_cancion,"~");
-strcat(ind2.tag_cancion,tagg);
-fread(tagg,34,1,mp3);
-strcat(ind2.tag_cancion,"~");
-strcat(ind2.tag_cancion,tagg);
-movetoblock(donde,disco);
-fwrite(&ind2,1024,1,disco);
-
-}
-
-int libre(FILE *disco){
-
-
+	header getheader(FILE *disco){
 	header tempH;
+
 	fseek(disco,0,0);
 	fread(&tempH,sizeof(tempH),1,disco);
 	fseek(disco,0,0);
-	char *block;
-	block = (char *)malloc(sizeof(char)*1024);
+
+	return tempH;
+	}
+
+	void movetoblock(int cual,FILE *disco){
+
+	fseek(disco,0,0);
+	fseek(disco,(cual*1024),0);
+
+	}
+
+	void placeinodo(int FE,long size,int donde,FILE* disco,FILE* mp3,char* tag){
+
+	inodo ind2;
+	fseek(mp3,0,0);
+	unsigned char *block;
+	unsigned char *tagg;
+	tagg = (unsigned char  *)malloc(sizeof(unsigned char )*125);
+	block = (unsigned char  *)malloc(sizeof(unsigned char )*1024);
+	ind2.size_byte=size;
+	ind2.num_bloques=0;
+	int sizedec=size;
+	ind2.pointer_FE=FE;
+	strcpy (ind2.tags,tag);
+	int bloquesc=0;
 	int i;
-	int tamfor = tempH.tam_mapabits;
-	
-	for(i=0;i<tamfor;i++){
-		int a;
-		fseek(disco,1024+i*1024,0);
-		fread(block,1024,1,disco);
-		for (a=0;a<1024;a++){
-			
-			if(block[a]=='0'){
-			return 1024*i+a;
-			}		
-		}
 
-	}
-	
-
-return -1;
-
-}
-
-void addFE(FE tempF,header tempH,FILE* disco){
-		int tamfor = tempH.tam_mapabits;
-		fseek(disco,((tamfor+1)*1024)+(tempH.FSuse*sizeof(FE)),0);
-		printf("ftell FE: %ld \n",ftell(disco));
-		fwrite(&tempF,sizeof(FE),1,disco);
-}
-
-void removeFE(FE tempF,header tempH,FILE* disco){
-FE TFE;
-int i;
-int tamfor = tempH.tam_mapabits;
-int here;
-	for(i=0;i<tempH.FSuse;i++){
-	fseek(disco,((tamfor+1)*1024)+(i*sizeof(FE)),0);
-	fread(&TFE,sizeof(FE),1,disco);
-	if(strcmp(tempF.filename,TFE.filename)==0){
-		here = i;
-		}
-	}
-int c;
-
-	for(c=here;c<tempH.FSuse-1;c++){
-	fseek(disco,((tamfor+1)*1024)+((c+1)*sizeof(FE)),0);
-	fread(&TFE,sizeof(FE),1,disco);
-	fseek(disco,((tamfor+1)*1024)+((c)*sizeof(FE)),0);
-	fwrite(&TFE,sizeof(FE),1,disco);
-	}
-fseek(disco,0,0);
-tempH.FSuse--;
-fwrite(&tempH,1024,1,disco);
-
-}
-
-
-void addTE(TE tempT,header tempH,int tamfor,FILE* disco){
-	if(tempH.TSuse==0){
-		movetoblock(tamfor+1,disco);
-		fwrite(&tempT,sizeof(tempT),1,disco);
-		}else{
-		int n;
-		for(n=0;n<tempH.TSuse+1;n++){
-		fseek(disco,0,0);
-		fseek(disco,(1024*(tamfor+1))+(sizeof(tempT)*n),0);
-		TE temp1;
-		fread(&temp1,sizeof(tempT),1,disco);
-		if(strcmp(tempT.tag,temp1.tag)<=0){
-		fseek(disco,0,0);
-		fseek(disco,(1024*(tamfor+1))+(sizeof(tempT)*n),0);
-		fwrite(&tempT,sizeof(tempT),1,disco);
-		tempT=temp1;
+		for(i=0;i<12;i++){
+			if(sizedec>0){
+			ind2.pointer_directo[i]=libre(disco);
+			cambiar(disco,ind2.pointer_directo[i],'1');
+			fread(block,1024,1,mp3);
+			movetoblock(ind2.pointer_directo[i],disco);
+			fwrite(block,1024,1,disco);
+			sizedec=sizedec-1024;
+			bloquesc++;
 		
 			}
+
+		}
+	
+	apunt apu;
+
+		if(sizedec>0){
+	
+			ind2.pointer_indirecto=libre(disco);
+			cambiar(disco,ind2.pointer_indirecto,'1');
+			int o;
+
+			for(o=0;o<256;o++){
+				if(sizedec>0){
+					int lib = libre(disco);
+					cambiar(disco,lib,'1');
+					apu.apuntadores[o]=lib;
+					movetoblock(lib,disco);
+					fread(block,1024,1,mp3);
+					fwrite(block,1024,1,disco);
+					sizedec=sizedec-1024;
+					bloquesc++;
+				}
+			}
+			movetoblock(ind2.pointer_indirecto,disco);
+			fwrite(&apu,1024,1,disco);
+
+		}
+
+	apunt apu1;
+
+		if(sizedec>0){
+			ind2.pointer_inderectodoble=libre(disco);
+			cambiar(disco,ind2.pointer_inderectodoble,'1');
+
+			int a;
+
+			for(a=0;a<256;a++){
+				if(sizedec>0){
+					int lib = libre(disco);
+					cambiar(disco,lib,'1');
+					apu1.apuntadores[a]=lib;
+					int c;
+					apunt apu2;
+					for(c=0;c<256;c++){
+						if(sizedec>0){
+						int lib1=libre(disco);
+						apu2.apuntadores[c]=lib1;
+						cambiar(disco,lib1,'1');
+						movetoblock(lib1,disco);
+						fread(block,1024,1,mp3);
+						fwrite(block,1024,1,disco);
+						sizedec=sizedec-1024;
+						bloquesc++; 
+					
+						}
+					}
+					movetoblock(lib,disco);
+					fwrite(&apu2,1024,1,disco);
+			
+				}
+			}
+			movetoblock(ind2.pointer_inderectodoble,disco);
+			fwrite(&apu1,1024,1,disco);
+
+		}
+
+	ind2.num_bloques=bloquesc;
+	fseek(mp3,0,0);
+	fseek(mp3,size-125,0);
+	fread(tagg,30,1,mp3);
+	strcpy(ind2.tag_cancion,tagg);
+	fread(tagg,60,1,mp3);
+	strcat(ind2.tag_cancion,"~");
+	strcat(ind2.tag_cancion,tagg);
+	fread(tagg,34,1,mp3);
+	strcat(ind2.tag_cancion,"~");
+	strcat(ind2.tag_cancion,tagg);
+	movetoblock(donde,disco);
+	fwrite(&ind2,1024,1,disco);
+
+	}
+
+	int libre(FILE *disco){
+
+
+		header tempH;
+		fseek(disco,0,0);
+		fread(&tempH,sizeof(tempH),1,disco);
+		fseek(disco,0,0);
+		char *block;
+		block = (char *)malloc(sizeof(char)*1024);
+		int i;
+		int tamfor = tempH.tam_mapabits;
+	
+		for(i=0;i<tamfor;i++){
+			int a;
+			fseek(disco,1024+i*1024,0);
+			fread(block,1024,1,disco);
+			for (a=0;a<1024;a++){
+				
+				if(block[a]=='0'){
+				return 1024*i+a;
+				}		
+			}
+	
+		}
+	
+
+	return -1;
+
+	}
+
+	void addFE(FE tempF,header tempH,FILE* disco){
+			int tamfor = tempH.tam_mapabits;
+			fseek(disco,((tamfor+1)*1024)+(tempH.FSuse*sizeof(FE)),0);
+			fwrite(&tempF,sizeof(FE),1,disco);
+	}
+
+	void removeFE(FE tempF,header tempH,FILE* disco){
+	FE TFE;
+	int i;
+	int tamfor = tempH.tam_mapabits;
+	int here;
+	fseek(disco,((tamfor+1)*1024),0);
+	
+		for(i=0;i<tempH.FSuse;i++){
+			fread(&TFE,sizeof(FE),1,disco);
+				if(strcmp(tempF.filename,TFE.filename)==0){
+				here = i;
+				}
+		}
+	int c;
+	fseek(disco,((tamfor+1)*1024)+((c)*sizeof(FE)),0);
+	strcpy(TFE.filename,"NULL"); 
+	fwrite(&TFE,sizeof(FE),1,disco);
+
+
+	}
+
+
+	void addTE(TE tempT,header tempH,int tamfor,FILE* disco){
+		if(tempH.TSuse==0){
+			movetoblock(tamfor+1,disco);
+			fwrite(&tempT,sizeof(tempT),1,disco);
+		}else{
+			int n;
+				for(n=0;n<tempH.TSuse+1;n++){
+					fseek(disco,0,0);
+					fseek(disco,(1024*(tamfor+1))+(sizeof(tempT)*n),0);
+					TE temp1;
+					fread(&temp1,sizeof(tempT),1,disco);
+			
+					if(strcmp(tempT.tag,temp1.tag)<=0){
+						fseek(disco,0,0);
+						fseek(disco,(1024*(tamfor+1))+(sizeof(tempT)*n),0);
+						fwrite(&tempT,sizeof(tempT),1,disco);
+						tempT=temp1;
+		
+					}
+				}
 		}
 	}
-}
 
-int istag(int cuantos,int donde,TE tempT,FILE* disco){
-	movetoblock(donde,disco);
+	int istag(int cuantos,int donde,TE tempT,FILE* disco){
+		
+		movetoblock(donde,disco);
+	
+		int i;
+			for(i=0;i<cuantos;i++){
+				TE tagtemp;
+				fread(&tagtemp,sizeof(tagtemp),1,disco);
+					if(strcmp(tempT.tag,tagtemp.tag)==0){
+						return i;
+					}
+			}
+		return -1;
+	}
+
+	int buscarapuntador(apunt apuntadores){
+
+	int i;
+
+		for(i=0;i<256;i++){
+			if(apuntadores.apuntadores[i]==-1){
+			return i;
+			}
+		}
+	return -1;
+
+	}
+
+	FE buscar(char* filename,FILE* disco){
+	header tempH;
+	tempH = getheader(disco);
+	movetoblock(tempH.tam_mapabits+1,disco);
+	int i;
+	FE tempF;
+		for(i=0;i<tempH.FSuse;i++){
+			fread(&tempF,sizeof(FE),1,disco);
+				if(strcmp(tempF.filename,filename)==0){
+		
+				return tempF;		
+				}
+
+		}
+	strcpy(tempF.filename,"NULL");
+	return tempF;
+
+	}
+
+	TE buscartag(char* tagname,FILE* disco){
+		header tempH;
+		tempH = getheader(disco);
+		movetoblock(tempH.tam_mapabits+1+tempH.cant_FS,disco);
+		int i;
+		TE tempT;
+			for(i=0;i<tempH.TSuse;i++){
+				fread(&tempT,sizeof(TE),1,disco);
+					if(strcmp(tempT.tag,tagname)==0){
+		
+					return tempT;		
+					}
+
+			}
+		strcpy(tempT.tag,"NULL");
+		return tempT;
+
+	}
+
+	apunt memsetint(apunt apuntadores){
 	
 	int i;
-	for(i=0;i<cuantos;i++){
-	TE tagtemp;
-	fread(&tagtemp,sizeof(tagtemp),1,disco);
-	if(strcmp(tempT.tag,tagtemp.tag)==0){
-	return i;
-	}
-	}
-	return -1;
-}
-
-int buscarapuntador(apunt apuntadores){
-int i;
-
-for(i=0;i<256;i++){
-	if(apuntadores.apuntadores[i]==-1){
-	return i;
-	}
-}
-return -1;
-
-}
-
-FE buscar(char* filename,FILE* disco){
-header tempH;
-tempH = getheader(disco);
-movetoblock(tempH.tam_mapabits+1,disco);
-int i;
-FE tempF;
-	for(i=0;i<tempH.FSuse;i++){
-	fread(&tempF,sizeof(FE),1,disco);
-		if(strcmp(tempF.filename,filename)==0){
-		
-		return tempF;		
-		}
-
-	}
-strcpy(tempF.filename,"NULL");
-return tempF;
-}
-
-TE buscartag(char* tagname,FILE* disco){
-header tempH;
-tempH = getheader(disco);
-movetoblock(tempH.tam_mapabits+1+tempH.cant_FS,disco);
-int i;
-TE tempT;
-	for(i=0;i<tempH.TSuse;i++){
-	fread(&tempT,sizeof(TE),1,disco);
-		if(strcmp(tempT.tag,tagname)==0){
-		
-		return tempT;		
-		}
-
-	}
-strcpy(tempT.tag,"NULL");
-return tempT;
-
-}
-
-apunt memsetint(apunt apuntadores){
-int i;
 		for(i=0;i<256;i++){
 		apuntadores.apuntadores[i]=-1;
 		}
-return apuntadores;
-}
+	return apuntadores;
+	}
 
-void taggear(header tempH,int tamforT,TE tempT,FILE* disco,FE tempF,apunt apuntadores){
+	void taggear(header tempH,int tamforT,TE tempT,FILE* disco,FE tempF,apunt apuntadores){
+
 			int istagg=istag(tempH.TSuse,tamforT+1,tempT,disco);
 			if(istagg==-1){
 				cambiar(disco,tempT.pointer,'1');
@@ -378,7 +400,7 @@ void taggear(header tempH,int tamforT,TE tempT,FILE* disco,FE tempF,apunt apunta
 			movetoblock(tempT.pointer,disco);
 			fwrite(&apuntadores,1024,1,disco);
 			}	
-}	
+	}	
 
 void main(int argc, char*argv[]){
 FILE *disco;
@@ -430,8 +452,8 @@ apunt apuntadores;
 		for(d=0;d<tempH.inicio_data;d++){		
 		block[d]='1';
 		}
-		//printf("%s",block);
-;		fseek(disco,1024,SEEK_SET);
+		
+		fseek(disco,1024,SEEK_SET);
 		fwrite(block,1024,1,disco);
 		int tamfor = tempH.tam_mapabits;
 		imprimir_mapa(disco,tamfor);	
@@ -446,7 +468,7 @@ apunt apuntadores;
 		
 		
 		fclose(disco);
-
+		printf("Disco creado");
 
 	}
 
@@ -475,23 +497,6 @@ if(strcmp(argv[1],"-a")==0)
 		}
 		fseek (mp3, 0, SEEK_END);
     		long size=ftell (mp3);
-/*
-		//char file[60];
-		char *file;
-		file = (char *)malloc(sizeof(char)*60);
-		/*strcpy(file,argv[2]);
-		int sizefile = strlen(file);
-		printf("char %s \n",file[1]);
-		
-		 /*   QString file="";
-    for(int i=0;i<filename.size();i++){
-        if(filename.at(i)!='/'){
-          file.append(filename.at(i));
-      }else{
-          file=""; 
-        }
-
-    }*/
 
 		strcpy(tempF.filename,argv[2]);
 		
@@ -675,7 +680,7 @@ if(strcmp(argv[1],"-it")==0)
 		inodo ind3;
 		movetoblock(tempF.pointer_inodo,disco);
 		fread(&ind3,sizeof(inodo),1,disco);
-		printf("%s \n",ind3.tags);
+		printf("%s",ind3.tags);
 		fclose(disco);
 
 
@@ -705,7 +710,6 @@ if(strcmp(argv[1],"-s")==0)
 		printf("%d;",apu);
 		}
 		}
-		printf("\n");
 		fclose(disco);
 
 
@@ -731,7 +735,7 @@ if(strcmp(argv[1],"-l")==0)
 		fread(&tempT,sizeof(TE),1,disco);
 		printf("%s;",tempT.tag);
 		}
-		printf("\n");
+		
 		fclose(disco);
 
 
@@ -1020,17 +1024,7 @@ if(strcmp(argv[1],"-d")==0)
 		
 	}	
 
-	if(strcmp(argv[1],"-rename")==0)
-	{
 
-		if(argc!=2){
-		printf("FALTAS DE ARGUMENTOS");
-		 exit(1);
-			}
-		system("cd /home/camilo/Music");	
-		system("rename 's/\ /\_/g' *");
-		
-	}
 
 	
 
