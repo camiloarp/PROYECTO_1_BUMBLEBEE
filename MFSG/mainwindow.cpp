@@ -39,17 +39,17 @@ void MainWindow::on_pushButton_exec_clicked() {
     this->ui->pause->setDisabled(false);
     this->ui->STOP->setDisabled(false);
     output = "";
-    QString comando;
     QString location;
     location=this->r.clocation;
     location.append("mfs.bin");
     ps.setWorkingDirectory(this->r.clocation);
-    comando="-play ";
-    comando.append(this->ui->songs->selectedItems().at(0)->text());
-    this->ui->textEdit_output->append(this->ui->songs->selectedItems().at(0)->text());
-    comando.append(" ");
-    comando.append(this->d.dname);
-    ps.start(location, comando.split(" "));
+    QStringList argu;
+    argu.append("-play");
+    argu.append(this->ui->songs->selectedItems().at(0)->text());
+    argu.append(this->d.dname);
+
+
+    ps.start(location,argu);
     this->ui->pushButton_exec->setDisabled(true);
 }
 
@@ -84,24 +84,24 @@ void MainWindow::on_actionNEW_DISK_triggered()
    d.exec();
    ps.setWorkingDirectory(this->r.clocation);
    output = "";
-   QString comando;
-   comando="-c ";
+
    bool ok;
    int size = d.size.toInt(&ok,10);
    int blockamount = size*1024;
    QString tosize;
    tosize.setNum(blockamount,10);
-   comando.append(tosize);
-   comando.append(" ");
-   comando.append(d.fe);
-   comando.append(" ");
-   comando.append(d.te);
-   comando.append(" ");
-   comando.append(d.dname);
+
+   QStringList argu;
+   argu.append("-c");
+   argu.append(tosize);
+   argu.append(d.fe);
+   argu.append(d.te);
+   argu.append(d.dname);
+
    QString location;
    location=this->r.clocation;
    location.append("mfs.bin");
-   ps.start(location, comando.split(" "));
+   ps.start(location,argu);
     ps.waitForFinished();
     QString pg;
     pg.setNum(this->page,10);
@@ -120,17 +120,15 @@ void MainWindow::on_actionADD_SONG_triggered()
    this->ui->tags->clear();
    ps.setWorkingDirectory(this->r.clocation);
    output = "-----\nTAG:";
-   QString comando;
-   comando="-a ";
-   comando.append(s.filename);
-   comando.append(" ");
-   comando.append("archivo");
-   comando.append(" ");
-   comando.append(this->s.disk);
    QString location;
    location=this->r.clocation;
    location.append("mfs.bin");
-   ps.start(location, comando.split(" "));
+   QStringList argu;
+   argu.append("-a");
+   argu.append(s.filename);
+   argu.append("archivo");
+   argu.append(this->d.dname);
+   ps.start(location,argu);
    ps.waitForFinished();
    this->mapadebits();
    this->printtags();
@@ -230,16 +228,18 @@ void MainWindow::on_tags_itemClicked(QListWidgetItem* item)
  this->filename.clear();
  QString tag = item->text();
  output = "";
- QString comando;
+
  QString location;
  location=this->r.clocation;
  location.append("mfs.bin");
  ps.setWorkingDirectory(this->r.clocation);
- comando="-s ";
- comando.append(tag);
- comando.append(" ");
- comando.append(this->d.dname);
- ps.start(location, comando.split(" "));
+
+ QStringList argu;
+ argu.append("-s");
+ argu.append(tag);
+ argu.append(this->d.dname);
+
+ ps.start(location,argu);
  ps.waitForFinished();
  QString inodos = this->output;
  QString ind="";
@@ -256,16 +256,20 @@ void MainWindow::on_tags_itemClicked(QListWidgetItem* item)
 }
 void MainWindow::getinofof(QString inodo){
     output = "";
-    QString comando;
+
     QString location;
     location=this->r.clocation;
     location.append("mfs.bin");
     ps.setWorkingDirectory(this->r.clocation);
-    comando="-qi ";
-    comando.append(inodo);
-    comando.append(" ");
-    comando.append(this->d.dname);
-    ps.start(location, comando.split(" "));
+
+
+    QStringList argu;
+    argu.append("-qi");
+    argu.append(inodo);
+    argu.append(this->d.dname);
+
+
+    ps.start(location,argu);
     ps.waitForFinished();
     QString info=this->output;
     QString cancion="";
@@ -277,6 +281,7 @@ void MainWindow::getinofof(QString inodo){
       }else{
           here++;
           if(here==1){
+
               this->ui->songs->addItem(cancion);
         }
 
@@ -290,18 +295,22 @@ void MainWindow::on_tagsong_clicked()
 {
     this->ui->tags->clear();
     output = "";
-    QString comando;
+
     QString location;
     location=this->r.clocation;
     location.append("mfs.bin");
     ps.setWorkingDirectory(this->r.clocation);
-    comando="-t ";
-    comando.append(this->ui->totag->text());
-    comando.append(" ");
-    comando.append(this->ui->songs->selectedItems().at(0)->text());
-    comando.append(" ");
-    comando.append(this->d.dname);
-    ps.start(location, comando.split(" "));
+
+
+    QStringList argu;
+    argu.append("-t");
+    argu.append(this->ui->totag->text());
+    argu.append(this->ui->songs->selectedItems().at(0)->text());
+    argu.append(this->d.dname);
+
+
+
+    ps.start(location,argu);
     ps.waitForFinished();
     this->printtags();
 
@@ -370,7 +379,7 @@ void MainWindow::on_left_clicked()
 
 void MainWindow::on_actionInstall_mpg123_triggered()
 {
-   // ps.waitForFinished();
+
     output = "";
     QString comando;
     QString location;
@@ -389,16 +398,19 @@ void MainWindow::on_borrar_clicked()
 {
 
     output = "";
-    QString comando;
+
     QString location;
     location=this->r.clocation;
     location.append("mfs.bin");
     ps.setWorkingDirectory(this->r.clocation);
-    comando="-d ";
-    comando.append(this->ui->songs->selectedItems().at(0)->text());
-    comando.append(" ");
-    comando.append(this->d.dname);
-    ps.start(location,comando.split(" "));
+
+
+    QStringList argu;
+    argu.append("-d");
+    argu.append(this->ui->songs->selectedItems().at(0)->text());
+    argu.append(this->d.dname);
+
+    ps.start(location,argu);
     ps.waitForFinished();
     this->ui->tags->clear();
     this->printtags();

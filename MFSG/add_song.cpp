@@ -16,7 +16,7 @@ add_song::~add_song()
 void add_song::on_buttonBox_accepted()
 {
     this->filename=this->ui->le_file->text();
-    this->disk=this->ui->le_disk->text();
+
 }
 
 void add_song::on_Browse_clicked()

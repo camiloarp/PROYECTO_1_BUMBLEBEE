@@ -8,6 +8,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+
+
 	typedef struct{
 
 	int cant_block ;
@@ -497,9 +499,26 @@ if(strcmp(argv[1],"-a")==0)
 		}
 		fseek (mp3, 0, SEEK_END);
     		long size=ftell (mp3);
-
-		strcpy(tempF.filename,argv[2]);
 		
+
+		char file[600];
+		strcpy(file,argv[2]);
+		char * pch;
+  		pch=strrchr(file,'/');
+		if(pch!=NULL){
+		int x = pch-file;
+		int sizee=strlen(file);
+		int i;
+		int e=0;
+		for(i=x+1;i<sizee;i++){
+		tempF.filename[e]=file[i];
+		e++;
+		}
+			}
+		else{
+		strcpy(tempF.filename,file);
+		}
+
 		tempF.pointer_inodo=libre(disco);
 		cambiar(disco,tempF.pointer_inodo,'1');
 		strcpy(tempT.tag,argv[3]);
@@ -979,7 +998,9 @@ if(strcmp(argv[1],"-d")==0)
 	comando = (char  *)malloc(sizeof(char )*125);
 	system("rm -f play.mp3");
 	strcpy(comando,"./mfs.bin -e ");
+	strcat(comando,"\"");
 	strcat(comando,argv[2]);
+	strcat(comando,"\"");
 	strcat(comando," play.mp3 ");
 	strcat(comando,argv[3]);
 	system(comando);

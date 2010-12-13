@@ -18,7 +18,6 @@ public:
     explicit add_song(QWidget *parent = 0);
     ~add_song();
     QString filename;
-    QString disk;
     QDir download;
 
 

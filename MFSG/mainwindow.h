@@ -13,6 +13,7 @@
 #include <QListWidgetItem>
 #include <QFileDialog>
 #include <QDir>
+ #include <QStringList>
 
 
 namespace Ui {

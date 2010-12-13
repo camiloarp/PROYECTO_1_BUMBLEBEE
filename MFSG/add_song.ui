@@ -39,16 +39,6 @@
     </rect>
    </property>
   </widget>
-  <widget class="QLineEdit" name="le_disk">
-   <property name="geometry">
-    <rect>
-     <x>120</x>
-     <y>90</y>
-     <width>113</width>
-     <height>27</height>
-    </rect>
-   </property>
-  </widget>
   <widget class="QLabel" name="label">
    <property name="geometry">
     <rect>
@@ -60,19 +50,6 @@
    </property>
    <property name="text">
     <string>FILENAME</string>
-   </property>
-  </widget>
-  <widget class="QLabel" name="label_2">
-   <property name="geometry">
-    <rect>
-     <x>30</x>
-     <y>90</y>
-     <width>91</width>
-     <height>17</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>DISK</string>
    </property>
   </widget>
   <widget class="QPushButton" name="Browse">
