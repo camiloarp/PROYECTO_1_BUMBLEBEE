@@ -18,10 +18,12 @@ public:
     QString size;
     QString fe;
     QString te;
+    int ok;
 private:
     Ui::add_disk *ui;
 
 private slots:
+    void on_buttonBox_rejected();
     void on_buttonBox_accepted();
 };
 

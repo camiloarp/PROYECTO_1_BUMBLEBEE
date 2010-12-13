@@ -28,5 +28,3 @@ FORMS    += mainwindow.ui \
     add_disk.ui \
     add_song.ui
 
-RESOURCES += \
-    icons.qrc

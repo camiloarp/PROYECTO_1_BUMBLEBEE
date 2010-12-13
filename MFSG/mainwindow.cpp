@@ -82,7 +82,8 @@ void MainWindow::on_actionNEW_DISK_triggered()
 {
 
    d.exec();
-   ps.setWorkingDirectory(this->r.clocation);
+  // ps.setWorkingDirectory(this->r.clocation);
+   if(d.ok==1){
    output = "";
 
    bool ok;
@@ -101,7 +102,9 @@ void MainWindow::on_actionNEW_DISK_triggered()
    QString location;
    location=this->r.clocation;
    location.append("mfs.bin");
-   ps.start(location,argu);
+
+
+    ps.start(location,argu);
     ps.waitForFinished();
     QString pg;
     pg.setNum(this->page,10);
@@ -109,7 +112,7 @@ void MainWindow::on_actionNEW_DISK_triggered()
     this->mapadebits();
     this->ui->right->setDisabled(false);
     this->ui->pushButton_exec->setDisabled(true);
-
+    }
 
 }
 
@@ -118,7 +121,7 @@ void MainWindow::on_actionADD_SONG_triggered()
 
    s.exec();
    this->ui->tags->clear();
-   ps.setWorkingDirectory(this->r.clocation);
+   //ps.setWorkingDirectory(this->r.clocation);
    output = "-----\nTAG:";
    QString location;
    location=this->r.clocation;
@@ -148,7 +151,7 @@ void MainWindow::on_STOP_clicked()
     QString location;
     location=this->r.clocation;
     location.append("mfs.bin");
-    ps.setWorkingDirectory(this->r.clocation);
+   // ps.setWorkingDirectory(this->r.clocation);
     comando="-kill";
     ps.execute(location, comando.split(" "));
     this->ui->pushButton_exec->setDisabled(false);
@@ -171,7 +174,7 @@ void MainWindow::on_pause_clicked()
         QString location;
         location=this->r.clocation;
         location.append("mfs.bin");
-        ps.setWorkingDirectory(this->r.clocation);
+       // ps.setWorkingDirectory(this->r.clocation);
         comando="-pause";
         ps.execute(location, comando.split(" "));
 
@@ -186,7 +189,7 @@ void MainWindow::on_pause_clicked()
         QString location;
         location=this->r.clocation;
         location.append("mfs.bin");
-        ps.setWorkingDirectory(this->r.clocation);
+      //  ps.setWorkingDirectory(this->r.clocation);
         comando="-conti";
         ps.execute(location, comando.split(" "));
     }
@@ -203,7 +206,7 @@ void MainWindow::printtags(){
     QString location;
     location=this->r.clocation;
     location.append("mfs.bin");
-    ps.setWorkingDirectory(this->r.clocation);
+   // ps.setWorkingDirectory(this->r.clocation);
     comando="-l disco.dat";
     ps.start(location, comando.split(" "));
     ps.waitForFinished();
@@ -232,7 +235,7 @@ void MainWindow::on_tags_itemClicked(QListWidgetItem* item)
  QString location;
  location=this->r.clocation;
  location.append("mfs.bin");
- ps.setWorkingDirectory(this->r.clocation);
+ //ps.setWorkingDirectory(this->r.clocation);
 
  QStringList argu;
  argu.append("-s");
@@ -260,7 +263,7 @@ void MainWindow::getinofof(QString inodo){
     QString location;
     location=this->r.clocation;
     location.append("mfs.bin");
-    ps.setWorkingDirectory(this->r.clocation);
+   // ps.setWorkingDirectory(this->r.clocation);
 
 
     QStringList argu;
@@ -299,7 +302,7 @@ void MainWindow::on_tagsong_clicked()
     QString location;
     location=this->r.clocation;
     location.append("mfs.bin");
-    ps.setWorkingDirectory(this->r.clocation);
+    //ps.setWorkingDirectory(this->r.clocation);
 
 
     QStringList argu;
@@ -341,12 +344,17 @@ void MainWindow::mapadebits(){
     this->mapabits=1;
     output = "";
     QString location;
-    QString comando;
+
     location=this->r.clocation;
     location.append("mfs.bin");
-    ps.setWorkingDirectory(this->r.clocation);
-    comando="-ma disco.dat";
-    ps.start(location, comando.split(" "));
+    //ps.setWorkingDirectory(this->r.clocation);
+
+    QStringList argu;
+    argu.append("-ma");
+    argu.append(this->d.dname);
+
+
+    ps.start(location, argu);
     ps.waitForFinished();
     QString oo;
     oo.setNum(this->page*100,10);
