@@ -9,7 +9,7 @@
 #include <string.h>
 
 
-
+int conteo=0;
 	typedef struct{
 
 	int cant_block ;
@@ -55,44 +55,77 @@
 	
 	}apunt;
 
-	void cambiar(FILE *disco,int cual,char por){
-	
-	char *block;
-	block = (char *)malloc(sizeof(char)*1024);
-	header tempH;
-	
-	fseek(disco,0,0);
-	fread(&tempH,sizeof(tempH),1,disco);
-	fseek(disco,0,0);
+void cambiar(FILE *arch,int cual,int valorBit){
 
-	int tamfor = tempH.tam_mapabits;
-	int blocknum= cual/1024;	
-	int posinblock = cual-(blocknum*1024);
-	
-	fseek(disco,1024+(blocknum)*1024,0);
-	fread(block,1024,1,disco);
-	
-	block[posinblock]=por;
 
-	fseek(disco,0,0),
-	fseek(disco,1024+blocknum*1024,0);
-	fwrite(block,1024,1,disco);
 
+    int bloqueBit;
+    bloqueBit=cual/(8*1024);
+    bloqueBit++;
+    cual=cual%(8*1024);
+    //ubicarnos en el bloque correcto
+
+    fseek(arch,1024*bloqueBit,SEEK_SET);
+    // leer el bloque al cual vamos a setear su bit
+    unsigned char *mapaBits;
+    mapaBits=(unsigned char *)malloc(1024);
+
+    fread(mapaBits,1,1024,arch);
+
+    fseek(arch,-1024,SEEK_CUR);
+
+    unsigned int casilla=cual/8;
+
+    if(valorBit==1)
+    {
+        mapaBits[casilla]=mapaBits[casilla] | (1 << (7-cual%8));
+    }else{
+        mapaBits[casilla] = mapaBits[casilla] & ~(1 << (7-cual%8));
+    }
+    fwrite(mapaBits,1,1024,arch);
+    free(mapaBits);
 	}
+
+int getBit(int cual,FILE *arch)
+{
+ 
+   
+
+    int bloqueBit;
+    bloqueBit=cual/(1024*8);
+	cual=cual%(1024*8);
+    bloqueBit++;
+    //ubicarnos en el bloque correcto
+    fseek(arch,1024*bloqueBit,SEEK_SET);
+    // leer el bloque al cual vamos a setear su bit
+    unsigned char *mapaBits;
+    mapaBits=(unsigned char *)malloc(1024);
+    fread(mapaBits,1,1024,arch);
+    unsigned int valorBit=mapaBits[cual/8] & (1<<(7-cual%8));
+
+    free(mapaBits);	
+    if(valorBit !=0)
+    {
+        return 1;
+    }else{
+        return 0;
+    }
+}
 
 	void imprimir_mapa(FILE *disco,int tam){
 
-	fseek(disco,0,0);
-	fseek(disco,1024,0);
+    
+	
 
-	char *block;
-	block = (unsigned char  *)malloc(sizeof(unsigned char )*1024);
-
-	int i;
-		for(i=0;i<tam;i++){
-			fread(block,1024,1,disco);
-			printf("%s",block);
-		}
+    int t;
+    	
+	
+      for(t=0;t<(1024*8)*tam;t++)
+       {
+            int bit=getBit(t,disco);
+            printf("%d",bit); 
+        }
+	
 
 	}
 
@@ -129,38 +162,44 @@
 	int bloquesc=0;
 	int i;
 
+	
+	int libre1=libre(disco);
 		for(i=0;i<12;i++){
 			if(sizedec>0){
-			ind2.pointer_directo[i]=libre(disco);
-			cambiar(disco,ind2.pointer_directo[i],'1');
+			ind2.pointer_directo[i]=libre1;
+			cambiar(disco,ind2.pointer_directo[i],1);
 			fread(block,1024,1,mp3);
 			movetoblock(ind2.pointer_directo[i],disco);
 			fwrite(block,1024,1,disco);
 			sizedec=sizedec-1024;
 			bloquesc++;
-		
+			libre1++;
+			
+	
 			}
 
 		}
 	
 	apunt apu;
-
+	
 		if(sizedec>0){
 	
 			ind2.pointer_indirecto=libre(disco);
-			cambiar(disco,ind2.pointer_indirecto,'1');
+			cambiar(disco,ind2.pointer_indirecto,1);
 			int o;
-
+			int libre2 = libre(disco);
 			for(o=0;o<256;o++){
+		
 				if(sizedec>0){
-					int lib = libre(disco);
-					cambiar(disco,lib,'1');
+					int lib = libre2;
+					cambiar(disco,lib,1);
 					apu.apuntadores[o]=lib;
 					movetoblock(lib,disco);
 					fread(block,1024,1,mp3);
 					fwrite(block,1024,1,disco);
 					sizedec=sizedec-1024;
 					bloquesc++;
+					libre2++;	
 				}
 			}
 			movetoblock(ind2.pointer_indirecto,disco);
@@ -172,27 +211,30 @@
 
 		if(sizedec>0){
 			ind2.pointer_inderectodoble=libre(disco);
-			cambiar(disco,ind2.pointer_inderectodoble,'1');
+			cambiar(disco,ind2.pointer_inderectodoble,1);
 
 			int a;
-
+			int libre3 = libre(disco);
 			for(a=0;a<256;a++){
+			
 				if(sizedec>0){
-					int lib = libre(disco);
-					cambiar(disco,lib,'1');
+					int lib = libre3;
+					cambiar(disco,lib,1);
 					apu1.apuntadores[a]=lib;
 					int c;
 					apunt apu2;
+					libre3++;
 					for(c=0;c<256;c++){
 						if(sizedec>0){
-						int lib1=libre(disco);
+						int lib1=libre3;
 						apu2.apuntadores[c]=lib1;
-						cambiar(disco,lib1,'1');
+						cambiar(disco,lib1,1);
 						movetoblock(lib1,disco);
 						fread(block,1024,1,mp3);
 						fwrite(block,1024,1,disco);
 						sizedec=sizedec-1024;
 						bloquesc++; 
+						libre3++;
 					
 						}
 					}
@@ -205,7 +247,7 @@
 			fwrite(&apu1,1024,1,disco);
 
 		}
-
+	free(block);
 	ind2.num_bloques=bloquesc;
 	fseek(mp3,0,0);
 	fseek(mp3,size-125,0);
@@ -219,37 +261,26 @@
 	strcat(ind2.tag_cancion,tagg);
 	movetoblock(donde,disco);
 	fwrite(&ind2,1024,1,disco);
+	free(tagg);
 
 	}
 
-	int libre(FILE *disco){
+	int libre(FILE *arch){
+    header tmp;
+    fseek(arch,0,0);
+    fread(&tmp,1,sizeof(header),arch);
 
+    int t;
 
-		header tempH;
-		fseek(disco,0,0);
-		fread(&tempH,sizeof(tempH),1,disco);
-		fseek(disco,0,0);
-		char *block;
-		block = (char *)malloc(sizeof(char)*1024);
-		int i;
-		int tamfor = tempH.tam_mapabits;
-	
-		for(i=0;i<tamfor;i++){
-			int a;
-			fseek(disco,1024+i*1024,0);
-			fread(block,1024,1,disco);
-			for (a=0;a<1024;a++){
-				
-				if(block[a]=='0'){
-				return 1024*i+a;
-				}		
-			}
-	
-		}
-	
+        
+        for(t=0;t<(1024*8)*tmp.tam_mapabits;t++)
+        {
+            if(getBit(t,arch)==0)
+                return t;
+        }
 
+    
 	return -1;
-
 	}
 
 	void addFE(FE tempF,header tempH,FILE* disco){
@@ -284,6 +315,8 @@
 		if(tempH.TSuse==0){
 			movetoblock(tamfor+1,disco);
 			fwrite(&tempT,sizeof(tempT),1,disco);
+		
+
 		}else{
 			int n;
 				for(n=0;n<tempH.TSuse+1;n++){
@@ -365,6 +398,8 @@
 
 			}
 		strcpy(tempT.tag,"NULL");
+
+					return tempT;		
 		return tempT;
 
 	}
@@ -382,18 +417,23 @@
 
 			int istagg=istag(tempH.TSuse,tamforT+1,tempT,disco);
 			if(istagg==-1){
-				cambiar(disco,tempT.pointer,'1');
+				cambiar(disco,tempT.pointer,1);
 				addTE(tempT,tempH,tamforT,disco);
 				movetoblock(tempT.pointer,disco);
 				apuntadores=memsetint(apuntadores);
+			
 				apuntadores.apuntadores[0]=tempF.pointer_inodo;
+				int i;
+			
 				fwrite(&apuntadores,1024,1,disco);
 				fseek(disco,0,0);
 				tempH.TSuse=tempH.TSuse+1;
 				fwrite(&tempH,1024,1,disco);
+			
 
 			}else{
-			movetoblock(1+tamforT+(istagg/tempH.cant_TS),disco);
+			
+			fseek(disco,((1+tamforT)*1024)+(istagg*sizeof(tempT)),0);
 			fread(&tempT,sizeof(tempT),1,disco);
 			movetoblock(tempT.pointer,disco);
 			fread(&apuntadores,1024,1,disco);
@@ -401,6 +441,9 @@
 			apuntadores.apuntadores[findapuntador]=tempF.pointer_inodo;			
 			movetoblock(tempT.pointer,disco);
 			fwrite(&apuntadores,1024,1,disco);
+			fseek(disco,0,0);
+			fwrite(&tempH,1024,1,disco);
+			
 			}	
 	}	
 
@@ -411,6 +454,13 @@ FILE *id;
 header tempH;
 FE tempF;
 TE tempT;
+	tempH.cant_block=0 ;
+	tempH.cant_FS=0;
+	tempH.cant_TS=0;
+	tempH.FSuse=0;
+	tempH.TSuse=0;
+	tempH.tam_mapabits=0;
+	tempH.inicio_data=0;
 apunt apuntadores;
 	if(strcmp(argv[1],"-c")==0)
 	{
@@ -420,7 +470,7 @@ apunt apuntadores;
 			exit(1);
 			}
 
-		if((disco = fopen(argv[5],"wb"))==NULL)
+		if((disco = fopen(argv[5],"rb+"))==NULL)
 		{
 		printf("No se pudo abrir el archivo origen.\n");
 		exit(2);
@@ -428,7 +478,7 @@ apunt apuntadores;
 		
 		char *block;
 		block = (char *)malloc(sizeof(char)*1024);
-		memset(block,'0',1024);
+		memset(block,0,1024);
 		int i;
 		int  cant_block;
 		cant_block = atoi(argv[2]);
@@ -441,7 +491,7 @@ apunt apuntadores;
 		tempH.cant_block = cant_block;
 		tempH.cant_FS= atoi(argv[3]);
 		tempH.cant_TS= atoi(argv[4]);
-		tempH.tam_mapabits = (cant_block/8)/1024;
+		tempH.tam_mapabits = ((cant_block/8)/1024);
 		tempH.FSuse=0;
 	        tempH.TSuse=0;		
 		
@@ -451,14 +501,13 @@ apunt apuntadores;
 		fwrite(&tempH,1024,1,disco);
 		
 		int d;
+		fseek(disco,1024,0);
 		for(d=0;d<tempH.inicio_data;d++){		
-		block[d]='1';
+		cambiar(disco,d,1);
 		}
-		
-		fseek(disco,1024,SEEK_SET);
-		fwrite(block,1024,1,disco);
+		//cambiar(disco,0,1);
 		int tamfor = tempH.tam_mapabits;
-		imprimir_mapa(disco,tamfor);	
+		//imprimir_mapa(disco,tamfor);	
 			
 		movetoblock(tamfor+1+tempH.cant_FS,disco);
 		memset(tempT.tag,'z',28);
@@ -468,10 +517,10 @@ apunt apuntadores;
 		}
 		
 		
-		
+		free(block);
 		fclose(disco);
-		printf("Disco creado");
-
+		printf("Disco creado \n");
+		
 	}
 
 
@@ -502,7 +551,10 @@ if(strcmp(argv[1],"-a")==0)
 		
 
 		char file[600];
+		memset(file,0,600);
+		memset(tempF.filename,0,60);
 		strcpy(file,argv[2]);
+		
 		char * pch;
   		pch=strrchr(file,'/');
 		if(pch!=NULL){
@@ -518,27 +570,35 @@ if(strcmp(argv[1],"-a")==0)
 		else{
 		strcpy(tempF.filename,file);
 		}
-
+		
 		tempF.pointer_inodo=libre(disco);
-		cambiar(disco,tempF.pointer_inodo,'1');
+		printf("pointer despues del inodo %d \n",tempF.pointer_inodo);
+		cambiar(disco,tempF.pointer_inodo,1);
+		printf("ya cambio el bit\n");
 		strcpy(tempT.tag,argv[3]);
 		tempH=getheader(disco);
 		int tamfor = tempH.tam_mapabits;
 		int tamforT=tamfor+tempH.cant_FS;
+		printf("comiensa inodo\n");
 		placeinodo(tempH.FSuse,size,tempF.pointer_inodo,disco,mp3,tempT.tag);		
 		tempT.pointer=libre(disco);
+		printf("comiensa a taggear");
 		taggear(tempH,tamforT,tempT,disco,tempF,apuntadores);
 		tempH=getheader(disco);	
-		addFE(tempF,tempH,disco);		
+		addFE(tempF,tempH,disco);
+		tempH=getheader(disco);		
 		fseek(disco,0,0);
 		tempH.FSuse=tempH.FSuse+1;
+		
 		fwrite(&tempH,1024,1,disco);
-
 	
+		
+
 		fclose(mp3);
 		fclose(disco);
 
-
+		printf("cancion agregada \n");
+		
 	}
 
 
@@ -640,7 +700,8 @@ if(strcmp(argv[1],"-a")==0)
 		finalb = (unsigned char  *)malloc(sizeof(unsigned char )*size);
 		fread(finalb,size,1,disco);
 		fwrite(finalb,size,1,exp);
-		
+		free(block);
+		free(finalb);
 		fclose(disco);
 		fclose(exp);	
 
@@ -742,7 +803,7 @@ if(strcmp(argv[1],"-l")==0)
 			exit(1);
 			}
 
-		if((disco = fopen(argv[2],"rb+"))==NULL)
+		if((disco = fopen(argv[2],"rb"))==NULL)
 		{
 		printf("No se pudo abrir el archivo origen.\n");
 		exit(2);
@@ -750,6 +811,7 @@ if(strcmp(argv[1],"-l")==0)
 		tempH=getheader(disco);
 		movetoblock(tempH.tam_mapabits+1+tempH.cant_FS,disco);
 		int i;
+		
 		for(i=0;i<tempH.TSuse;i++){
 		fread(&tempT,sizeof(TE),1,disco);
 		printf("%s;",tempT.tag);
@@ -897,7 +959,7 @@ if(strcmp(argv[1],"-d")==0)
 			int i;
 			for(i=0;i<12;i++){
 				if(numb>0){
-				cambiar(disco,ind7.pointer_directo[i],'0');
+				cambiar(disco,ind7.pointer_directo[i],0);
 				numb--;
 				
 				}
@@ -911,13 +973,13 @@ if(strcmp(argv[1],"-d")==0)
 				int o;
 					for(o=0;o<256;o++){
 						if(numb>0){
-							cambiar(disco,apu.apuntadores[o],'0');
+							cambiar(disco,apu.apuntadores[o],0);
 							numb--;
 						}
 					}
 
 				}
-			cambiar(disco,ind7.pointer_indirecto,'0');
+			cambiar(disco,ind7.pointer_indirecto,0);
 			if(numb>0){
 			movetoblock(ind7.pointer_inderectodoble,disco);
 			apunt apu1;
@@ -931,20 +993,20 @@ if(strcmp(argv[1],"-d")==0)
 					fread(&apu2,sizeof(apunt),1,disco);
 						for(c=0;c<256;c++){
 							if(numb>0){
-							cambiar(disco,apu2.apuntadores[c],'0');
+							cambiar(disco,apu2.apuntadores[c],0);
 							numb--;
 							
 							}
 						}
 
-					cambiar(disco,apu1.apuntadores[a],'0');
+					cambiar(disco,apu1.apuntadores[a],0);
 					}
 				}
-			cambiar(disco,ind7.pointer_inderectodoble,'0');
+			cambiar(disco,ind7.pointer_inderectodoble,0);
 
 		}
 	
-		cambiar(disco,tempF.pointer_inodo,'0');
+		cambiar(disco,tempF.pointer_inodo,0);
 		removeFE(tempF,tempH,disco);	
 		tempH=getheader(disco);
 		tempH.FSuse--;
@@ -1005,7 +1067,7 @@ if(strcmp(argv[1],"-d")==0)
 	strcat(comando,argv[3]);
 	system(comando);
 	system( "./mpg123.bin play.mp3");
-	
+	free(comando);
 	}
 
 
