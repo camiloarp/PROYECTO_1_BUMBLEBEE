@@ -572,17 +572,17 @@ if(strcmp(argv[1],"-a")==0)
 		}
 		
 		tempF.pointer_inodo=libre(disco);
-		printf("pointer despues del inodo %d \n",tempF.pointer_inodo);
+
 		cambiar(disco,tempF.pointer_inodo,1);
-		printf("ya cambio el bit\n");
+
 		strcpy(tempT.tag,argv[3]);
 		tempH=getheader(disco);
 		int tamfor = tempH.tam_mapabits;
 		int tamforT=tamfor+tempH.cant_FS;
-		printf("comiensa inodo\n");
+	
 		placeinodo(tempH.FSuse,size,tempF.pointer_inodo,disco,mp3,tempT.tag);		
 		tempT.pointer=libre(disco);
-		printf("comiensa a taggear");
+
 		taggear(tempH,tamforT,tempT,disco,tempF,apuntadores);
 		tempH=getheader(disco);	
 		addFE(tempF,tempH,disco);
